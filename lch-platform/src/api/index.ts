@@ -1,0 +1,14 @@
+// API模块统一导出
+export { authApi } from './auth';
+export { userApi } from './user';
+export { merchantApi } from './merchant';
+export { deviceApi } from './device';
+export { orderApi } from './order';
+
+// 类型定义统一导出
+export * from '@/types/common';
+export * from '@/types/auth';
+export * from '@/types/user';
+export * from '@/types/merchant';
+export * from '@/types/device';
+export * from '@/types/order';
