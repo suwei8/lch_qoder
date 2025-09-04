@@ -28,7 +28,7 @@ export class RolesGuard implements CanActivate {
     const roleHierarchy: Record<UserRole, number> = {
       [UserRole.USER]: 1,
       [UserRole.MERCHANT]: 2,
-      [UserRole.ADMIN]: 3,
+      [UserRole.PLATFORM_ADMIN]: 3,
     };
 
     const userLevel = roleHierarchy[user.role] || 0;

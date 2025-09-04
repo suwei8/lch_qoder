@@ -117,7 +117,7 @@ const handleLogin = async () => {
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .login-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -138,33 +138,31 @@ const handleLogin = async () => {
 .login-header {
   text-align: center;
   margin-bottom: 40px;
-  
-  .login-title {
-    font-size: 32px;
-    font-weight: 700;
-    color: #1890ff;
-    margin-bottom: 8px;
-  }
-  
-  .login-subtitle {
-    font-size: 16px;
-    color: #666;
-  }
 }
 
-.login-form {
-  .el-form-item {
-    margin-bottom: 24px;
-  }
+.login-header .login-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1890ff;
+  margin-bottom: 8px;
+}
+
+.login-header .login-subtitle {
+  font-size: 16px;
+  color: #666;
+}
+
+.login-form .el-form-item {
+  margin-bottom: 24px;
 }
 
 .login-footer {
   text-align: center;
   margin-top: 30px;
-  
-  p {
-    font-size: 12px;
-    color: #999;
-  }
+}
+
+.login-footer p {
+  font-size: 12px;
+  color: #999;
 }
 </style>
