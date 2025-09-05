@@ -1,5 +1,11 @@
-import { IsString, IsOptional, IsEnum, IsNumber, IsObject, Min } from 'class-validator';
-import { OrderStatus, PaymentMethod } from '../entities/order.entity';
+import { IsString, IsOptional, IsEnum, IsNumber, IsObject, Min, Max } from 'class-validator';
+import { OrderStatus, PaymentMethod } from '../../common/interfaces/common.interface';
+
+/**
+ * 订单管理DTO
+ * @author Lily
+ * @description 订单CRUD操作的数据传输对象
+ */
 
 export class CreateOrderDto {
   @IsNumber()
@@ -8,16 +14,35 @@ export class CreateOrderDto {
   @IsNumber()
   device_id: number;
 
+  @IsOptional()
   @IsEnum(PaymentMethod)
-  payment_method: PaymentMethod;
+  payment_method?: PaymentMethod;
 
   @IsNumber()
+  @Min(0)
+  amount: number;
+
+  @IsOptional()
+  @IsNumber()
   @Min(1)
-  duration_minutes: number;
+  @Max(240) // 最多4小时
+  duration_minutes?: number;
+
+  @IsOptional()
+  @IsNumber()
+  balance_used?: number;
+
+  @IsOptional()
+  @IsNumber()
+  gift_balance_used?: number;
+
+  @IsOptional()
+  @IsString()
+  coupon_id?: string;
 
   @IsOptional()
   @IsObject()
-  device_params?: any;
+  device_data?: any;
 }
 
 export class UpdateOrderDto {
@@ -27,15 +52,39 @@ export class UpdateOrderDto {
 
   @IsOptional()
   @IsNumber()
-  actual_duration_minutes?: number;
+  paid_amount?: number;
+
+  @IsOptional()
+  @IsNumber()
+  refund_amount?: number;
+
+  @IsOptional()
+  @IsNumber()
+  duration_minutes?: number;
+
+  @IsOptional()
+  @IsEnum(PaymentMethod)
+  payment_method?: PaymentMethod;
 
   @IsOptional()
   @IsString()
-  cancel_reason?: string;
+  wechat_prepay_id?: string;
 
   @IsOptional()
   @IsString()
-  refund_reason?: string;
+  wechat_transaction_id?: string;
+
+  @IsOptional()
+  @IsObject()
+  payment_info?: any;
+
+  @IsOptional()
+  @IsString()
+  remark?: string;
+
+  @IsOptional()
+  @IsObject()
+  device_data?: any;
 }
 
 export class PaymentResultDto {

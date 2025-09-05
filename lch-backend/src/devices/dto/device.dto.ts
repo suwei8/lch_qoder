@@ -1,59 +1,69 @@
-import { IsString, IsOptional, IsEnum, IsNumber, IsObject, Min, Max } from 'class-validator';
-import { DeviceType, DeviceStatus, DeviceWorkStatus } from '../entities/device.entity';
+import { IsString, IsOptional, IsEnum, IsNumber, IsObject, Min, Max, IsBoolean } from 'class-validator';
+import { DeviceStatus } from '../../common/interfaces/common.interface';
+
+/**
+ * 设备管理DTO
+ * @author Lily
+ * @description 设备CRUD操作的数据传输对象
+ */
 
 export class CreateDeviceDto {
   @IsString()
-  device_id: string;
+  devid: string;
 
   @IsString()
   name: string;
 
-  @IsEnum(DeviceType)
-  type: DeviceType;
-
   @IsNumber()
   merchant_id: number;
 
+  @IsOptional()
   @IsString()
-  location: string;
+  description?: string;
 
+  @IsOptional()
+  @IsString()
+  location?: string;
+
+  @IsOptional()
   @IsNumber()
   @Min(-90)
   @Max(90)
-  latitude: number;
+  latitude?: number;
 
+  @IsOptional()
   @IsNumber()
   @Min(-180)
   @Max(180)
-  longitude: number;
+  longitude?: number;
 
+  @IsOptional()
   @IsNumber()
   @Min(0)
-  price_per_minute: number;
+  price_per_minute?: number = 300;
 
   @IsOptional()
   @IsNumber()
-  @Min(1)
-  min_duration_minutes?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(1)
-  max_duration_minutes?: number;
+  @Min(0)
+  min_amount?: number = 500;
 
   @IsOptional()
   @IsObject()
-  settings?: any;
+  config_params?: any;
 
   @IsOptional()
-  @IsObject()
-  capabilities?: any;
+  @IsString()
+  iccid?: string;
 }
 
 export class UpdateDeviceDto {
   @IsOptional()
   @IsString()
   name?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
 
   @IsOptional()
   @IsString()
@@ -82,41 +92,29 @@ export class UpdateDeviceDto {
 
   @IsOptional()
   @IsNumber()
-  @Min(1)
-  min_duration_minutes?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(1)
-  max_duration_minutes?: number;
+  @Min(0)
+  min_amount?: number;
 
   @IsOptional()
   @IsObject()
-  settings?: any;
+  config_params?: any;
 
   @IsOptional()
-  @IsObject()
-  capabilities?: any;
+  @IsBoolean()
+  is_active?: boolean;
 }
 
 export class DeviceStatusDto {
   @IsEnum(DeviceStatus)
   status: DeviceStatus;
 
-  @IsEnum(DeviceWorkStatus)
-  work_status: DeviceWorkStatus;
+  @IsOptional()
+  @IsString()
+  signal_strength?: string;
 
   @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  water_level?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  soap_level?: number;
+  @IsString()
+  firmware_version?: string;
 
   @IsOptional()
   @IsString()
@@ -124,8 +122,8 @@ export class DeviceStatusDto {
 }
 
 export class DeviceControlDto {
-  @IsEnum(['start', 'stop', 'pause', 'resume'])
-  command: 'start' | 'stop' | 'pause' | 'resume';
+  @IsEnum(['start', 'stop', 'pause', 'resume', 'reboot'])
+  command: 'start' | 'stop' | 'pause' | 'resume' | 'reboot';
 
   @IsOptional()
   @IsNumber()
@@ -140,10 +138,6 @@ export class DeviceListDto {
   @IsOptional()
   @IsString()
   keyword?: string;
-
-  @IsOptional()
-  @IsEnum(DeviceType)
-  type?: DeviceType;
 
   @IsOptional()
   @IsEnum(DeviceStatus)

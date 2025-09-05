@@ -6,12 +6,12 @@ import type {
   UpdateDeviceDto,
   DeviceStatusDto,
   DeviceControlDto,
-  PaginatedResponse 
+  DevicePaginatedResponse
 } from '@/types/device';
 
 export const deviceApi = {
   // 获取设备列表
-  getDevices: (params: DeviceListParams): Promise<PaginatedResponse<Device>> => {
+  getDevices: (params: DeviceListParams): Promise<DevicePaginatedResponse> => {
     return request.get('/devices', { params });
   },
 
@@ -65,5 +65,36 @@ export const deviceApi = {
     totalUsageMinutes: number;
   }> => {
     return request.get('/devices/stats');
+  },
+
+  // 获取设备概览数据
+  getOverview: (): Promise<{
+    total: number;
+    online: number;
+    working: number;
+    offline: number;
+    error: number;
+  }> => {
+    return request.get('/devices/overview');
+  },
+
+  // 导出设备报表
+  exportReport: (params: any): Promise<Blob> => {
+    return request.get('/devices/export', { params, responseType: 'blob' });
+  },
+
+  // 批量同步设备状态
+  batchSyncDevices: (): Promise<{ synced: number; failed: number }> => {
+    return request.post('/devices/batch-sync');
+  },
+
+  // 同步单个设备状态
+  syncDeviceStatus: (id: number): Promise<{ success: boolean; message: string }> => {
+    return request.post(`/devices/${id}/sync`);
+  },
+
+  // 设置维护模式
+  setMaintenanceMode: (id: number, enabled: boolean): Promise<{ success: boolean; message: string }> => {
+    return request.post(`/devices/${id}/maintenance`, { enabled });
   },
 };

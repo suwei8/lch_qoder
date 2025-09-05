@@ -1,4 +1,4 @@
-import type { PaginatedResponse, PaginationParams, MerchantStatus, SettlementCycle } from './common';
+import type { PaginationParams, MerchantStatus, SettlementCycle } from './common';
 import type { User } from './user';
 
 // 商户信息
@@ -33,6 +33,19 @@ export interface Merchant {
 export interface MerchantListParams extends PaginationParams {
   keyword?: string;
   status?: MerchantStatus;
+  startDate?: string;
+  endDate?: string;
+  sortBy?: string;
+  sortOrder?: string;
+}
+
+// 商户分页响应
+export interface MerchantPaginatedResponse {
+  data: Merchant[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 // 创建商户DTO

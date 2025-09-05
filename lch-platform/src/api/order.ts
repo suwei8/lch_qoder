@@ -5,12 +5,12 @@ import type {
   CreateOrderDto, 
   UpdateOrderDto,
   PaymentResultDto,
-  PaginatedResponse 
+  OrderPaginatedResponse
 } from '@/types/order';
 
 export const orderApi = {
   // 获取订单列表
-  getOrders: (params: OrderListParams): Promise<PaginatedResponse<Order>> => {
+  getOrders: (params: OrderListParams): Promise<OrderPaginatedResponse> => {
     return request.get('/orders', { params });
   },
 

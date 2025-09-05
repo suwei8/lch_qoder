@@ -37,8 +37,11 @@ export class User {
   })
   status: UserStatus;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, comment: '余额(分)' })
   balance: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0, comment: '赠送余额(分)' })
+  gift_balance: number;
 
   @Column({ nullable: true, length: 200 })
   address: string;

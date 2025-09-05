@@ -33,6 +33,7 @@ export interface PaginationParams {
 export enum UserRole {
   USER = 'user',           // 普通用户
   MERCHANT = 'merchant',   // 商户
+  ADMIN = 'admin',         // 管理员
   PLATFORM_ADMIN = 'platform_admin',         // 平台管理员
 }
 
@@ -45,12 +46,16 @@ export enum UserStatus {
 
 // 订单状态枚举
 export enum OrderStatus {
-  PENDING = 'pending',       // 待支付
-  PAID = 'paid',            // 已支付
-  WASHING = 'washing',      // 洗车中
-  COMPLETED = 'completed',  // 已完成
-  CANCELLED = 'cancelled',  // 已取消
-  REFUNDED = 'refunded',    // 已退款
+  INIT = 'INIT',                 // 初始状态
+  PAY_PENDING = 'PAY_PENDING',   // 待支付
+  PAID = 'PAID',                 // 已支付
+  STARTING = 'STARTING',         // 启动中
+  IN_USE = 'IN_USE',             // 使用中
+  SETTLING = 'SETTLING',         // 结算中
+  DONE = 'DONE',                 // 已完成
+  REFUNDING = 'REFUNDING',       // 退款中
+  CANCELLED = 'CANCELLED',       // 已取消
+  CLOSED = 'CLOSED',             // 已关闭
 }
 
 // 支付方式枚举
@@ -65,6 +70,7 @@ export enum PaymentMethod {
 export enum DeviceStatus {
   ONLINE = 'online',        // 在线
   OFFLINE = 'offline',      // 离线
+  ERROR = 'error',          // 错误
   FAULT = 'fault',         // 故障
   WASHING = 'washing',     // 洗车中
   MAINTENANCE = 'maintenance', // 维护中
@@ -98,4 +104,7 @@ export enum ErrorCode {
   DEVICE_START_TIMEOUT = 50004,
   INSUFFICIENT_BALANCE = 50005,
   ORDER_STATUS_ERROR = 50006,
+  ORDER_PAYMENT_TIMEOUT = 50007,
+  ORDER_USAGE_TIMEOUT = 50008,
+  ORDER_SETTLEMENT_TIMEOUT = 50009,
 }

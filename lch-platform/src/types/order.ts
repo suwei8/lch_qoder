@@ -1,4 +1,4 @@
-import type { PaginatedResponse, PaginationParams, OrderStatus, PaymentMethod } from './common';
+import type { PaginationParams, OrderStatus, PaymentMethod } from './common';
 import type { User } from './user';
 import type { Merchant } from './merchant';
 import type { Device } from './device';
@@ -48,6 +48,15 @@ export interface OrderListParams extends PaginationParams {
   device_id?: number;
   start_date?: string;
   end_date?: string;
+}
+
+// 订单分页响应
+export interface OrderPaginatedResponse {
+  data: Order[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 // 创建订单DTO

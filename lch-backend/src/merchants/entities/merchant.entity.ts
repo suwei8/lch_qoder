@@ -36,6 +36,12 @@ export class Merchant {
   @Column({ length: 100, nullable: true })
   email: string;
 
+  @Column({ length: 100, nullable: true, comment: '微信openid' })
+  wechat_openid: string;
+
+  @Column({ length: 20, nullable: true, comment: '手机号' })
+  mobile: string;
+
   @Column({ length: 200 })
   address: string;
 

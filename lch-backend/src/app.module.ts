@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { ScheduleModule } from '@nestjs/schedule';
 // import { RedisModule } from '@nestjs-modules/ioredis';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -10,6 +11,8 @@ import { MerchantsModule } from './merchants/merchants.module';
 import { DevicesModule } from './devices/devices.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
+import { IotModule } from './iot/iot.module';
+import { NotificationModule } from './notification/notification.module';
 import { CommonModule } from './common/common.module';
 import { databaseConfig } from './config/database.config';
 // import { redisConfig } from './config/redis.config';
@@ -24,6 +27,9 @@ import { databaseConfig } from './config/database.config';
     
     // 数据库模块
     TypeOrmModule.forRootAsync(databaseConfig),
+    
+    // 定时任务模块
+    ScheduleModule.forRoot(),
     
     // Redis模块 - 暂时注释掉
     // RedisModule.forRootAsync(redisConfig),
@@ -48,6 +54,8 @@ import { databaseConfig } from './config/database.config';
     DevicesModule,
     OrdersModule,
     PaymentsModule,
+    IotModule,
+    NotificationModule,
   ],
 })
 export class AppModule {}

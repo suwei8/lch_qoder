@@ -187,6 +187,33 @@ export class UsersService {
     }
   }
 
+  async updateGiftBalance(id: number, amount: number, operation: 'add' | 'subtract'): Promise<User> {
+    try {
+      const user = await this.findOne(id);
+      
+      if (operation === 'add') {
+        user.gift_balance = Number(user.gift_balance || 0) + amount;
+      } else {
+        const currentGiftBalance = Number(user.gift_balance || 0);
+        if (currentGiftBalance < amount) {
+          throw new BadRequestException('赠送余额不足');
+        }
+        user.gift_balance = currentGiftBalance - amount;
+      }
+
+      const updatedUser = await this.usersRepository.save(user);
+
+      // 清除缓存
+      await this.cacheService.del(`user:${id}`);
+
+      this.logger.log(`用户赠送余额更新成功: ${id}, 操作: ${operation}, 金额: ${amount}`, 'UsersService');
+      return updatedUser;
+    } catch (error) {
+      this.logger.error(`用户赠送余额更新失败: ${error.message}`, error.stack, 'UsersService');
+      throw error;
+    }
+  }
+
   async updateLoginInfo(id: number, ip: string): Promise<void> {
     try {
       await this.usersRepository.update(id, {
