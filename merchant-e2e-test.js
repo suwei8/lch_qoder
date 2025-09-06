@@ -1,5 +1,11 @@
 // 商户端E2E测试脚本
-const puppeteer = require('puppeteer');
+let puppeteer;
+try {
+    puppeteer = require('puppeteer');
+} catch (err) {
+    console.error('⚠️ 未安装 puppeteer，请先运行 `npm install puppeteer`');
+    process.exit(1);
+}
 
 async function runMerchantE2ETest() {
     let browser;
@@ -7,10 +13,10 @@ async function runMerchantE2ETest() {
         console.log('🚀 开始商户端E2E测试...\n');
         
         // 启动浏览器
-        browser = await puppeteer.launch({ 
-            headless: false, // 显示浏览器界面
+        browser = await puppeteer.launch({
+            headless: true,  // 在无界面环境中运行
             slowMo: 1000,    // 减慢操作速度便于观察
-            devtools: true   // 打开开发者工具
+            devtools: false  // 关闭开发者工具
         });
         
         const page = await browser.newPage();
