@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>洗车IOT管理系统 - 测试商户登录指南</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #1890ff;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 18px;
+        }
+        
+        .login-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .login-card {
+            padding: 30px;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .login-card:hover {
+            border-color: #1890ff;
+            box-shadow: 0 4px 12px rgba(24,144,255,0.15);
+        }
+        
+        .login-card.platform {
+            background: linear-gradient(135deg, #1890ff, #722ed1);
+            color: white;
+            border-color: #1890ff;
+        }
+        
+        .login-card.merchant {
+            background: linear-gradient(135deg, #52c41a, #13c2c2);
+            color: white;
+            border-color: #52c41a;
+        }
+        
+        .login-card h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        .login-card p {
+            font-size: 16px;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+        
+        .login-card .credentials {
+            background: rgba(255,255,255,0.15);
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .login-card .credentials div {
+            margin-bottom: 8px;
+            font-family: monospace;
+        }
+        
+        .login-button {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .login-button:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            transform: translateY(-2px);
+        }
+        
+        .test-accounts {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .test-accounts h3 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .accounts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .account-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #52c41a;
+        }
+        
+        .account-item .name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .account-item .phone {
+            color: #666;
+            font-family: monospace;
+        }
+        
+        .features {
+            margin-top: 30px;
+        }
+        
+        .features h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .features ul {
+            list-style: none;
+        }
+        
+        .features li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #666;
+        }
+        
+        .features li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #52c41a;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .login-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .accounts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 洗车IOT管理系统</h1>
+            <p>测试商户登录指南</p>
+        </div>
+        
+        <div class="login-options">
+            <div class="login-card platform" onclick="openPlatform()">
+                <h3>🏢 平台管理后台</h3>
+                <p>平台运营方使用，管理所有商户和系统功能</p>
+                <div class="credentials">
+                    <div>用户名: admin</div>
+                    <div>密码: 123456</div>
+                </div>
+                <a href="http://localhost:5601" class="login-button" target="_blank">立即登录</a>
+            </div>
+            
+            <div class="login-card merchant" onclick="openMerchant()">
+                <h3>🏪 商户管理后台</h3>
+                <p>商户使用，管理自己的设备和订单</p>
+                <div class="credentials">
+                    <div>使用测试手机号登录</div>
+                    <div>密码: 123456</div>
+                </div>
+                <a href="http://localhost:5601/merchant-login" class="login-button" target="_blank">立即登录</a>
+            </div>
+        </div>
+        
+        <div class="test-accounts">
+            <h3>📱 测试商户账号列表</h3>
+            <div class="accounts-grid">
+                <div class="account-item">
+                    <div class="name">测试洗车店</div>
+                    <div class="phone">13900139001</div>
+                </div>
+                <div class="account-item">
+                    <div class="name">青青洗车服务中心</div>
+                    <div class="phone">13900139002</div>
+                </div>
+                <div class="account-item">
+                    <div class="name">星光汽车美容服务有限公司</div>
+                    <div class="phone">13900139003</div>
+                </div>
+                <div class="account-item">
+                    <div class="name">蓝天汽车服务连锁店</div>
+                    <div class="phone">13900139004</div>
+                </div>
+                <div class="account-item">
+                    <div class="name">快洁自助洗车服务站</div>
+                    <div class="phone">13900139005</div>
+                </div>
+                <div class="account-item">
+                    <div class="name">洁净汽车美容养护中心</div>
+                    <div class="phone">13900139006</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="features">
+            <h3>🎯 测试功能</h3>
+            <ul>
+                <li>查看商户统计数据（设备数量、收入、订单等）</li>
+                <li>查看近期订单记录</li>
+                <li>模拟商户登录和权限验证</li>
+                <li>响应式设计，支持手机和PC端</li>
+                <li>完整的测试数据支持（146个订单，14台设备）</li>
+                <li>支持不同角色的权限控制</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        function openPlatform() {
+            window.open('http://localhost:5601', '_blank');
+        }
+        
+        function openMerchant() {
+            window.open('http://localhost:5601/merchant-login', '_blank');
+        }
+        
+        // 检查服务状态
+        function checkServices() {
+            const checkUrl = (url, name) => {
+                fetch(url).then(() => {
+                    console.log(`✅ ${name} 服务正常`);
+                }).catch(() => {
+                    console.log(`❌ ${name} 服务未启动`);
+                });
+            };
+            
+            checkUrl('http://localhost:5601', '前端');
+            checkUrl('http://localhost:5603/api', '后端');
+        }
+        
+        // 页面加载后检查服务
+        window.addEventListener('load', checkServices);
+    </script>
+</body>
+</html>

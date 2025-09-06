@@ -1,8 +1,20 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { ElMessage } from 'element-plus';
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
+
+// 扩展 RouteMeta 类型定义
+declare module 'vue-router' {
+  interface RouteMeta {
+    title?: string;
+    icon?: string;
+    hidden?: boolean;
+    requiresAuth?: boolean;
+    roles?: 'user' | 'merchant_staff' | 'merchant_admin' | 'platform_admin' | ('user' | 'merchant_staff' | 'merchant_admin' | 'platform_admin')[];
+  }
+}
 
 // 配置NProgress
 NProgress.configure({ showSpinner: false });
@@ -13,6 +25,69 @@ const routes: RouteRecordRaw[] = [
     name: 'Login',
     component: () => import('@/views/auth/Login.vue'),
     meta: { title: '登录', requiresAuth: false },
+  },
+  {
+    path: '/merchant-login',
+    name: 'MerchantLogin',
+    component: () => import('@/views/auth/merchant-login.vue'),
+    meta: { title: '商户登录', requiresAuth: false },
+  },
+  {
+    path: '/merchant',
+    name: 'MerchantLayout',
+    component: () => import('@/layout/merchant.vue'),
+    redirect: '/merchant/dashboard',
+    meta: { requiresAuth: true, roles: ['merchant_admin', 'merchant_staff'] },
+    children: [
+      {
+        path: '/merchant/dashboard',
+        name: 'MerchantDashboard',
+        component: () => import('@/views/merchant/dashboard.vue'),
+        meta: { title: '商户后台', icon: 'DataBoard' },
+      },
+      {
+        path: '/merchant/devices',
+        name: 'MerchantDevices',
+        component: () => import('@/views/merchant/devices.vue'),
+        meta: { title: '设备管理', icon: 'Monitor' },
+      },
+      {
+        path: '/merchant/orders',
+        name: 'MerchantOrders',
+        component: () => import('@/views/merchant/orders.vue'),
+        meta: { title: '订单管理', icon: 'Document' },
+      },
+      {
+        path: '/merchant/finance',
+        name: 'MerchantFinance',
+        component: () => import('@/views/merchant/finance.vue'),
+        meta: { title: '财务管理', icon: 'Money' },
+      },
+      {
+        path: '/merchant/customers',
+        name: 'MerchantCustomers',
+        component: () => import('@/views/merchant/customers.vue'),
+        meta: { title: '客户管理', icon: 'User' },
+      },
+      {
+        path: '/merchant/marketing',
+        name: 'MerchantMarketing',
+        component: () => import('@/views/merchant/marketing.vue'),
+        meta: { title: '营销工具', icon: 'Present' },
+      },
+      {
+        path: '/merchant/reports',
+        name: 'MerchantReports',
+        component: () => import('@/views/merchant/reports.vue'),
+        meta: { title: '数据报表', icon: 'DataAnalysis' },
+      },
+      {
+        path: '/merchant/settings',
+        name: 'MerchantSettings',
+        component: () => import('@/views/merchant/settings.vue'),
+        meta: { title: '商户设置', icon: 'Setting' },
+      },
+    ],
   },
   {
     path: '/',
@@ -82,6 +157,12 @@ const routes: RouteRecordRaw[] = [
           },
         ],
       },
+      {
+        path: '/debug',
+        name: 'Debug',
+        component: () => import('@/views/debug.vue'),
+        meta: { title: 'API调试', hidden: true },
+      },
     ],
   },
   {
@@ -98,14 +179,18 @@ const router = createRouter({
 });
 
 // 路由守卫
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   NProgress.start();
   
   const authStore = useAuthStore();
   
   // 设置页面标题
   if (to.meta.title) {
-    document.title = `${to.meta.title} - 亮车惠平台管理后台`;
+    if (to.path.startsWith('/merchant')) {
+      document.title = `${to.meta.title} - 亮车惠商户管理后台`;
+    } else {
+      document.title = `${to.meta.title} - 亮车惠平台管理后台`;
+    }
   }
   
   // 检查是否需要认证
@@ -115,7 +200,12 @@ router.beforeEach(async (to, from, next) => {
       await authStore.checkAuthStatus();
       
       if (!authStore.isAuthenticated) {
-        next('/login');
+        // 根据用户类型重定向到不同的登录页
+        if (to.path.startsWith('/merchant')) {
+          next('/merchant-login');
+        } else {
+          next('/login');
+        }
         return;
       }
     }
@@ -129,8 +219,13 @@ router.beforeEach(async (to, from, next) => {
   }
   
   // 已登录用户访问登录页，重定向到首页
-  if (to.path === '/login' && authStore.isAuthenticated) {
-    next('/dashboard');
+  if ((to.path === '/login' || to.path === '/merchant-login') && authStore.isAuthenticated) {
+    const userRole = authStore.userRole;
+    if (userRole === 'merchant_admin' || userRole === 'merchant_staff') {
+      next('/merchant/dashboard');
+    } else {
+      next('/dashboard');
+    }
     return;
   }
   

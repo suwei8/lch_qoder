@@ -90,8 +90,8 @@ const handleLogin = async () => {
     if (loginForm.username === 'admin' && loginForm.password === '123456') {
       // 模拟登录响应数据
       const mockLoginData = {
-        accessToken: 'mock-access-token',
-        refreshToken: 'mock-refresh-token',
+        accessToken: 'mock-access-token-' + Date.now(),
+        refreshToken: 'mock-refresh-token-' + Date.now(),
         user: {
           id: 1,
           openid: 'platform_admin_openid',

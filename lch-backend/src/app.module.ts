@@ -22,7 +22,8 @@ import { databaseConfig } from './config/database.config';
     // 配置模块
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env.local', '.env'],
+      envFilePath: ['.env', '.env.local'],
+      ignoreEnvFile: false,
     }),
     
     // 数据库模块

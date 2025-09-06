@@ -1,0 +1,8 @@
+<!-- 这是一个简单的SVG logo，实际项目中应该使用真实的logo图片 -->
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="12" fill="#1989FA"/>
+  <path d="M16 40C16 35.5817 19.5817 32 24 32H40C44.4183 32 48 35.5817 48 40V44C48 46.2091 46.2091 48 44 48H20C17.7909 48 16 46.2091 16 44V40Z" fill="white"/>
+  <circle cx="24" cy="24" r="6" fill="white"/>
+  <circle cx="40" cy="24" r="6" fill="white"/>
+  <path d="M20 36H44" stroke="#1989FA" stroke-width="2" stroke-linecap="round"/>
+</svg>

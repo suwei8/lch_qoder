@@ -31,16 +31,22 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (response: AxiosResponse) => {
-    const { code, message, data } = response.data;
-    
-    // 接口调用成功
-    if (code === 0) {
-      return data;
+    // 直接返回响应数据，后端已经通过TransformInterceptor统一格式
+    if (response.data && typeof response.data === 'object') {
+      const { code, message, data } = response.data;
+      
+      // 接口调用成功
+      if (code === 0) {
+        return data;
+      }
+      
+      // 业务错误
+      ElMessage.error(message || '请求失败');
+      return Promise.reject(new Error(message || '请求失败'));
     }
     
-    // 业务错误
-    ElMessage.error(message || '请求失败');
-    return Promise.reject(new Error(message || '请求失败'));
+    // 直接返回数据（兼容处理）
+    return response.data;
   },
   async (error: AxiosError) => {
     const authStore = useAuthStore();
@@ -50,7 +56,14 @@ request.interceptors.response.use(
       
       switch (status) {
         case 401:
-          // 未授权，尝试刷新令牌
+          // 未授权，对于模拟登录不清除认证状态
+          if (authStore.token?.startsWith('mock-access-token')) {
+            console.warn('模拟登录状态下API调用被拒绝，但保持登录状态');
+            ElMessage.warning('API服务暂不可用，使用模拟数据');
+            return Promise.reject(error);
+          }
+          
+          // 对于真实token，尝试刷新令牌
           if (authStore.refreshToken && !error.config?.url?.includes('/auth/refresh')) {
             try {
               await authStore.refreshAccessToken();

@@ -1,0 +1,158 @@
+/* 重置样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f7f8fa;
+}
+
+/* 移动端适配 */
+html {
+  font-size: 16px;
+}
+
+@media screen and (max-width: 375px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@media screen and (min-width: 414px) {
+  html {
+    font-size: 18px;
+  }
+}
+
+/* 隐藏滚动条 */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* 自定义主题色 */
+:root {
+  --primary-color: #1989fa;
+  --success-color: #07c160;
+  --warning-color: #ff976a;
+  --danger-color: #ee0a24;
+  --gray-color: #969799;
+  --light-gray-color: #f7f8fa;
+  --border-color: #ebedf0;
+  --text-color: #323233;
+  --text-color-2: #646566;
+  --text-color-3: #969799;
+}
+
+/* 通用类 */
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.p-16 {
+  padding: 16px;
+}
+
+.mt-16 {
+  margin-top: 16px;
+}
+
+.mb-16 {
+  margin-bottom: 16px;
+}
+
+/* 页面容器 */
+.page-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f7f8fa;
+  padding-bottom: 20px;
+}
+
+.page-content {
+  padding: 16px;
+}
+
+/* 卡片样式 */
+.custom-card {
+  background: #fff;
+  border-radius: 8px;
+  margin: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.custom-card-header {
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.custom-card-body {
+  padding: 16px;
+}
+
+/* 按钮样式 */
+.btn-primary {
+  background: linear-gradient(135deg, #1989fa 0%, #1c7df1 100%);
+  border: none;
+  color: white;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #07c160 0%, #06a852 100%);
+  border: none;
+  color: white;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+/* 安全区域适配 */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
