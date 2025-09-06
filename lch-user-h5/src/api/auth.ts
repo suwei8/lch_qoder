@@ -10,6 +10,11 @@ export interface PhoneLoginParams {
   code: string
 }
 
+export interface PhonePasswordLoginParams {
+  phone: string
+  password: string
+}
+
 export interface BindPhoneParams {
   phone: string
   code: string
@@ -44,9 +49,14 @@ export const authApi = {
     return request.post('/auth/wechat/login', params)
   },
 
-  // 手机号登录
+  // 手机号登录（验证码方式）
   phoneLogin: (params: PhoneLoginParams): Promise<LoginResponse> => {
     return request.post('/auth/phone/login', params)
+  },
+
+  // 手机号密码登录
+  phonePasswordLogin: (params: PhonePasswordLoginParams): Promise<LoginResponse> => {
+    return request.post('/auth/phone/password', params)
   },
 
   // 绑定手机号

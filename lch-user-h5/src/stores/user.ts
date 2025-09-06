@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { User, Location } from '@/types'
 import { authApi } from '@/api/auth'
-import { Toast } from 'vant'
+import { showSuccessToast } from 'vant'
 
 export const useUserStore = defineStore('user', () => {
   // 状态
@@ -85,7 +85,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  // 手机号登录
+  // 手机号登录（验证码方式）
   const phoneLogin = async (phone: string, code: string) => {
     try {
       const response = await authApi.phoneLogin({ phone, code })
@@ -94,6 +94,44 @@ export const useUserStore = defineStore('user', () => {
       return response
     } catch (error) {
       console.error('手机号登录失败:', error)
+      throw error
+    }
+  }
+
+  // 手机号密码登录
+  const phonePasswordLogin = async (phone: string, password: string) => {
+    // 如果是演示账号，直接使用模拟数据
+    if (phone === '13800138000' && password === '123456') {
+      console.log('检测到演示账号，使用模拟登录')
+      const mockUser = {
+        id: 1001,
+        openid: 'demo-openid-001',
+        nickname: '测试用户',
+        avatar: 'https://avatars.githubusercontent.com/u/1?v=4',
+        phone: '13800138000',
+        balance: 100.00,
+        giftBalance: 50.00,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+      
+      const mockToken = `mock-access-token-${Date.now()}`
+      setToken(mockToken)
+      setUser(mockUser)
+      
+      return {
+        user: mockUser,
+        accessToken: mockToken
+      }
+    }
+    
+    try {
+      const response = await authApi.phonePasswordLogin({ phone, password })
+      setToken(response.accessToken)
+      setUser(response.user)
+      return response
+    } catch (error) {
+      console.error('手机号密码登录失败:', error)
       throw error
     }
   }
@@ -117,6 +155,27 @@ export const useUserStore = defineStore('user', () => {
     try {
       const savedToken = localStorage.getItem('user_token')
       if (!savedToken) return false
+
+      // 如果是模拟 Token，直接返回 true，不调用 API
+      if (savedToken.startsWith('mock-access-token')) {
+        console.log('检测到模拟 Token，跳过 API 验证')
+        setToken(savedToken)
+        
+        // 设置模拟用户数据
+        const mockUser = {
+          id: 1001,
+          openid: 'demo-openid-001',
+          nickname: '测试用户',
+          avatar: 'https://avatars.githubusercontent.com/u/1?v=4',
+          phone: '13800138000',
+          balance: 100.00,
+          giftBalance: 50.00,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+        setUser(mockUser)
+        return true
+      }
 
       setToken(savedToken)
       const userInfo = await authApi.getUserInfo()
@@ -207,7 +266,7 @@ export const useUserStore = defineStore('user', () => {
     token.value = ''
     location.value = null
     localStorage.removeItem('user_token')
-    Toast.success('已退出登录')
+    showSuccessToast('已退出登录')
   }
 
   return {
@@ -228,6 +287,7 @@ export const useUserStore = defineStore('user', () => {
     initWechatConfig,
     wechatLogin,
     phoneLogin,
+    phonePasswordLogin,
     bindPhone,
     checkAuthStatus,
     getLocation,

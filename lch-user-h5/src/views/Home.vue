@@ -14,7 +14,7 @@
           <div class="greeting">
             <p class="welcome">你好，{{ userStore.user?.nickname || '用户' }}</p>
             <p class="location" @click="refreshLocation">
-              <van-icon name="location-o" />
+              <van-icon name="location-o" :color="hasLocation ? '#fff' : '#ff9800'" />
               {{ currentAddress || '点击获取位置' }}
             </p>
           </div>
@@ -77,12 +77,22 @@
           size="small" 
           @click="refreshStores"
           :loading="isLoadingStores"
+          :disabled="!hasLocation"
         >
           刷新
         </van-button>
       </div>
 
-      <van-pull-refresh v-model="isRefreshing" @refresh="onRefresh">
+      <!-- 位置提示 -->
+      <div v-if="!hasLocation" class="location-hint">
+        <van-icon name="location-o" />
+        <span>请先获取位置信息以查看附近洗车点</span>
+        <van-button type="primary" size="small" @click="refreshLocation">
+          获取位置
+        </van-button>
+      </div>
+
+      <van-pull-refresh v-if="hasLocation" v-model="isRefreshing" @refresh="onRefresh">
         <van-list
           v-model:loading="isLoadingStores"
           :finished="isFinished"
@@ -150,7 +160,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { storeApi } from '@/api/store'
 import type { Store } from '@/types'
-import { Toast } from 'vant'
+import { showLoadingToast, showFailToast, closeToast } from 'vant'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -195,16 +205,16 @@ const getStoreStatusText = (store: Store) => {
 // 刷新位置信息
 const refreshLocation = async () => {
   try {
-    Toast.loading('获取位置中...')
-    const location = await userStore.getLocation()
+    showLoadingToast('获取位置中...')
+    await userStore.getLocation()
     
     // 这里可以调用地址解析API获取详细地址
     currentAddress.value = `北京市朝阳区` // 模拟地址
     
     await loadNearbyStores()
-    Toast.clear()
+    closeToast()
   } catch (error) {
-    Toast.fail('获取位置失败')
+    showFailToast('获取位置失败')
     console.error('获取位置失败:', error)
   }
 }
@@ -235,7 +245,7 @@ const loadNearbyStores = async (append = false) => {
 
     isFinished.value = response.list.length < pageSize
   } catch (error) {
-    Toast.fail('加载门店失败')
+    showFailToast('加载门店失败')
     console.error('加载门店失败:', error)
     
     // 如果API失败，显示模拟数据
@@ -480,6 +490,27 @@ onMounted(async () => {
   font-weight: 600;
   color: #323233;
   margin: 0;
+}
+
+.location-hint {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  color: #969799;
+  margin-bottom: 16px;
+}
+
+.location-hint .van-icon {
+  font-size: 24px;
+  color: #ddd;
+  margin-bottom: 8px;
+}
+
+.location-hint span {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 14px;
 }
 
 .store-card {

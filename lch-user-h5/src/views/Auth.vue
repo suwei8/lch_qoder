@@ -34,9 +34,19 @@
         >
           手机号登录
         </van-button>
+        
+        <!-- 测试用快捷登录 - 在微信登录界面也显示 -->
+        <van-button 
+          type="warning" 
+          size="large" 
+          class="auth-btn demo-btn"
+          @click="handleDemoLogin"
+        >
+          🧪 演示数据
+        </van-button>
       </div>
 
-      <!-- 手机号登录 -->
+      <!-- 手机号密码登录 -->
       <div v-else class="phone-auth">
         <van-form @submit="handlePhoneLogin">
           <van-field
@@ -49,25 +59,12 @@
           />
           
           <van-field
-            v-model="smsCode"
-            type="digit"
-            label="验证码"
-            placeholder="请输入验证码"
-            :rules="codeRules"
-            maxlength="6"
-          >
-            <template #button>
-              <van-button 
-                size="small" 
-                type="primary" 
-                :disabled="!isPhoneValid || countdown > 0"
-                :loading="isSendingCode"
-                @click="sendSmsCode"
-              >
-                {{ countdown > 0 ? `${countdown}s后重发` : '发送验证码' }}
-              </van-button>
-            </template>
-          </van-field>
+            v-model="password"
+            type="password"
+            label="密码"
+            placeholder="请输入密码"
+            :rules="passwordRules"
+          />
           
           <div class="auth-actions">
             <van-button 
@@ -76,7 +73,8 @@
               class="auth-btn"
               native-type="submit"
               :loading="isPhoneLoading"
-              :disabled="!phone || !smsCode"
+              :disabled="!phone || !password"
+              @click="handlePhoneLogin"
             >
               登录
             </van-button>
@@ -89,6 +87,37 @@
               @click="showPhoneLogin = false"
             >
               返回微信登录
+            </van-button>
+                    
+            <!-- 测试按钮 -->
+            <van-button 
+              type="default" 
+              size="large" 
+              class="auth-btn"
+              @click="testLogin"
+            >
+              📝 测试登录
+            </van-button>
+            
+            <!-- 测试用快捷登录 -->
+            <van-button 
+              type="warning" 
+              size="large" 
+              class="auth-btn demo-btn"
+              @click="handleDemoLogin"
+            >
+              🧪 演示数据
+            </van-button>
+            
+            <!-- 快速登录 -->
+            <van-button 
+              type="success" 
+              size="large" 
+              class="auth-btn quick-login-btn"
+              @click="handleQuickDemoLogin"
+              :loading="isWechatLoading"
+            >
+              ⚡ 快速登录
             </van-button>
           </div>
         </van-form>
@@ -110,8 +139,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { authApi } from '@/api/auth'
-import { Toast } from 'vant'
+import { showFailToast, showSuccessToast } from 'vant'
 
 const router = useRouter()
 const route = useRoute()
@@ -121,11 +149,9 @@ const userStore = useUserStore()
 const appTitle = import.meta.env.VITE_APP_TITLE
 const showPhoneLogin = ref(false)
 const phone = ref('')
-const smsCode = ref('')
-const countdown = ref(0)
+const password = ref('')
 const isWechatLoading = ref(false)
 const isPhoneLoading = ref(false)
-const isSendingCode = ref(false)
 
 // 计算属性
 const isWechatEnv = computed(() => {
@@ -143,15 +169,15 @@ const phoneRules = [
   { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号' }
 ]
 
-const codeRules = [
-  { required: true, message: '请输入验证码' },
-  { pattern: /^\d{6}$/, message: '请输入6位数字验证码' }
+const passwordRules = [
+  { required: true, message: '请输入密码' },
+  { min: 6, message: '密码至少为6位' }
 ]
 
 // 微信授权登录
 const handleWechatAuth = () => {
   if (!isWechatEnv.value) {
-    Toast.fail('请在微信中打开')
+    showFailToast('请在微信中打开')
     return
   }
 
@@ -165,50 +191,102 @@ const handleWechatAuth = () => {
   window.location.href = authUrl
 }
 
-// 发送短信验证码
-const sendSmsCode = async () => {
-  if (!isPhoneValid.value) {
-    Toast.fail('请输入正确的手机号')
-    return
-  }
+// 发送短信验证码（删除，不再需要）
+// const sendSmsCode = async () => {
+//   ...
+// }
 
-  try {
-    isSendingCode.value = true
-    await authApi.sendSmsCode({ phone: phone.value, type: 'login' })
-    Toast.success('验证码已发送')
-    
-    // 开始倒计时
-    countdown.value = 60
-    const timer = setInterval(() => {
-      countdown.value--
-      if (countdown.value <= 0) {
-        clearInterval(timer)
-      }
-    }, 1000)
-  } catch (error) {
-    console.error('发送验证码失败:', error)
-  } finally {
-    isSendingCode.value = false
-  }
+// 测试登录函数
+const testLogin = () => {
+  console.log('测试登录按钮被点击')
+  console.log('当前手机号:', phone.value)
+  console.log('当前密码:', password.value)
+  showSuccessToast('测试登录按钮有效!')
 }
 
-// 手机号登录
-const handlePhoneLogin = async () => {
-  if (!isPhoneValid.value || !smsCode.value) {
-    Toast.fail('请填写完整信息')
-    return
-  }
+// 演示登录（供测试使用）
+const handleDemoLogin = async () => {
+  console.log('演示登录按钮被点击 - 填充演示数据')
+  
+  // 切换到手机号登录界面
+  showPhoneLogin.value = true
+  
+  // 填充演示手机号和密码
+  phone.value = '13800138000'
+  password.value = '123456'
+  
+  showSuccessToast('已填充演示登录信息')
+}
 
+// 快速演示登录（直接登录）
+const handleQuickDemoLogin = async () => {
+  console.log('快速演示登录按钮被点击')
   try {
-    isPhoneLoading.value = true
-    await userStore.phoneLogin(phone.value, smsCode.value)
-    Toast.success('登录成功')
+    isWechatLoading.value = true
+    console.log('开始快速演示登录流程')
+    
+    // 模拟登录数据
+    const mockUser = {
+      id: 1001,
+      openid: 'demo-openid-001',
+      nickname: '测试用户',
+      avatar: 'https://avatars.githubusercontent.com/u/1?v=4',
+      phone: '13800138000',
+      balance: 100.00,
+      giftBalance: 50.00,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+    
+    const mockToken = `mock-access-token-${Date.now()}`
+    console.log('设置用户数据:', mockUser)
+    console.log('设置Token:', mockToken)
+    
+    // 设置用户信息和 token
+    userStore.setToken(mockToken)
+    userStore.setUser(mockUser)
+    
+    console.log('用户状态更新完成')
+    showSuccessToast('快速演示登录成功')
     
     // 登录成功后跳转
     const redirect = route.query.redirect as string || '/'
+    console.log('准备跳转到:', redirect)
     router.push(redirect)
   } catch (error) {
-    console.error('手机登录失败:', error)
+    console.error('快速演示登录失败:', error)
+    showFailToast('快速演示登录失败')
+  } finally {
+    isWechatLoading.value = false
+  }
+}
+
+// 手机号密码登录
+const handlePhoneLogin = async () => {
+  console.log('登录按钮被点击')
+  console.log('手机号:', phone.value)
+  console.log('密码:', password.value)
+  console.log('手机号验证结果:', isPhoneValid.value)
+  
+  if (!isPhoneValid.value || !password.value) {
+    console.log('表单验证失败')
+    showFailToast('请填写完整信息')
+    return
+  }
+
+  try {
+    console.log('开始登录流程')
+    isPhoneLoading.value = true
+    await userStore.phonePasswordLogin(phone.value, password.value)
+    showSuccessToast('登录成功')
+    
+    // 登录成功后跳转
+    const redirect = route.query.redirect as string || '/'
+    console.log('登录成功，准备跳转到:', redirect)
+    router.push(redirect)
+  } catch (error) {
+    console.error('手机号密码登录失败:', error)
+    showFailToast('登录失败，请检查手机号和密码')
   } finally {
     isPhoneLoading.value = false
   }
@@ -224,7 +302,7 @@ const handleWechatCallback = async () => {
     try {
       isWechatLoading.value = true
       await userStore.wechatLogin(code)
-      Toast.success('登录成功')
+      showSuccessToast('登录成功')
       
       // 清除URL中的参数
       window.history.replaceState({}, document.title, window.location.pathname)
@@ -234,7 +312,7 @@ const handleWechatCallback = async () => {
       router.push(redirect)
     } catch (error) {
       console.error('微信登录失败:', error)
-      Toast.fail('微信登录失败，请重试')
+      showFailToast('微信登录失败，请重试')
     } finally {
       isWechatLoading.value = false
     }
@@ -368,5 +446,17 @@ onMounted(() => {
 .link {
   color: #fff;
   text-decoration: underline;
+}
+
+.demo-btn {
+  background: #ff9500 !important;
+  border-color: #ff9500 !important;
+  color: white !important;
+}
+
+.quick-login-btn {
+  background: #07c160 !important;
+  border-color: #07c160 !important;
+  color: white !important;
 }
 </style>
