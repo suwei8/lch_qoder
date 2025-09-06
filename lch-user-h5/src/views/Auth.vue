@@ -2,7 +2,7 @@
   <div class="auth-container">
     <div class="auth-header">
       <div class="logo">
-        <img src="/logo.png" alt="亮车惠" class="logo-img" />
+        <img src="/logo.svg" alt="亮车惠" class="logo-img" />
         <h1 class="app-title">{{ appTitle }}</h1>
       </div>
       <p class="subtitle">智能自助洗车，扫码即用</p>
