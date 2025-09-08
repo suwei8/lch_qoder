@@ -13,6 +13,9 @@ import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { IotModule } from './iot/iot.module';
 import { NotificationModule } from './notification/notification.module';
+import { CouponsModule } from './coupons/coupons.module';
+import { MarketingModule } from './marketing/marketing.module';
+import { PerformanceModule } from './performance/performance.module';
 import { CommonModule } from './common/common.module';
 import { databaseConfig } from './config/database.config';
 // import { redisConfig } from './config/redis.config';
@@ -57,6 +60,9 @@ import { databaseConfig } from './config/database.config';
     PaymentsModule,
     IotModule,
     NotificationModule,
+    CouponsModule,
+    MarketingModule,
+    PerformanceModule,
   ],
 })
 export class AppModule {}

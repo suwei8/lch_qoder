@@ -1,9 +1,21 @@
 {
+  "name": "lch-qoder-e2e",
+  "version": "1.0.0",
+  "description": "洗车IOT管理系统 E2E测试套件",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report"
+  },
   "dependencies": {
     "@nestjs/axios": "^4.0.1",
     "axios": "^1.11.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
     "vue-tsc": "^1.8.22"
   }
 }

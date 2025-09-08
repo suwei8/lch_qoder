@@ -1,12 +1,27 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { resolve } from 'path';
+import { visualizer } from 'rollup-plugin-visualizer';
+import { compression } from 'vite-plugin-compression2';
 
-export default defineConfig({
-  plugins: [vue()],
+export default defineConfig(({ mode }) => {
+  const isProduction = mode === 'production'
+  
+  return {
+    plugins: [
+      vue(),
+      ...(isProduction ? [
+        compression({ algorithm: 'gzip' }),
+        visualizer({ filename: 'dist/bundle-analysis.html', open: false }),
+      ] : []),
+    ],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      '@components': resolve(__dirname, 'src/components'),
+      '@views': resolve(__dirname, 'src/views'),
+      '@utils': resolve(__dirname, 'src/utils'),
+      '@api': resolve(__dirname, 'src/api'),
     },
   },
   server: {
@@ -22,15 +37,22 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: false,
+    sourcemap: !isProduction,
+    minify: 'terser',
     chunkSizeWarningLimit: 1500,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vue: ['vue', 'vue-router', 'pinia'],
-          elementPlus: ['element-plus', '@element-plus/icons-vue'],
-          echarts: ['echarts', 'vue-echarts'],
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('vue')) return 'vue-vendor'
+            if (id.includes('element-plus')) return 'ui-vendor'
+            if (id.includes('echarts')) return 'charts-vendor'
+            return 'vendor'
+          }
         },
+        chunkFileNames: 'js/[name]-[hash].js',
+        entryFileNames: 'js/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
       },
     },
   },

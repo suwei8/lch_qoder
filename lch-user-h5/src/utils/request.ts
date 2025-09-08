@@ -1,6 +1,6 @@
 import axios from 'axios'
 import type { ApiResponse } from '@/types'
-import { Toast } from 'vant'
+import { showFailToast } from 'vant'
 
 // 创建axios实例
 const request = axios.create({
@@ -38,7 +38,7 @@ request.interceptors.response.use(
     }
     
     // 业务错误
-    Toast.fail(data.message || '请求失败')
+    showFailToast(data.message || '请求失败')
     return Promise.reject(new Error(data.message || '请求失败'))
   },
   (error) => {
@@ -49,29 +49,29 @@ request.interceptors.response.use(
       
       switch (status) {
         case 401:
-          Toast.fail('登录已过期，请重新登录')
+          showFailToast('登录已过期，请重新登录')
           // 清除token并跳转到登录页
           localStorage.removeItem('user_token')
           window.location.href = '/auth'
           break
         case 403:
-          Toast.fail('没有权限访问')
+          showFailToast('没有权限访问')
           break
         case 404:
-          Toast.fail('请求的资源不存在')
+          showFailToast('请求的资源不存在')
           break
         case 500:
-          Toast.fail('服务器错误，请稍后重试')
+          showFailToast('服务器错误，请稍后重试')
           break
         default:
-          Toast.fail(data?.message || '网络错误，请稍后重试')
+          showFailToast(data?.message || '网络错误，请稍后重试')
       }
     } else if (error.code === 'NETWORK_ERROR') {
-      Toast.fail('网络连接失败，请检查网络')
+      showFailToast('网络连接失败，请检查网络')
     } else if (error.code === 'ECONNABORTED') {
-      Toast.fail('请求超时，请重试')
+      showFailToast('请求超时，请重试')
     } else {
-      Toast.fail('网络错误，请稍后重试')
+      showFailToast('网络错误，请稍后重试')
     }
     
     return Promise.reject(error)

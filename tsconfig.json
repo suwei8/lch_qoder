@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "declaration": false
+  },
+  "include": [
+    "playwright.config.ts",
+    "tests/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "lch-backend/node_modules",
+    "lch-platform/node_modules", 
+    "lch-user-h5/node_modules"
+  ]
+}

@@ -209,7 +209,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { couponsApi } from '@/api/coupons'
-import { Toast, Dialog } from 'vant'
+import { showSuccessToast, showFailToast, showDialog } from 'vant'
 import ProfileEditor from '@/components/ProfileEditor.vue'
 
 const router = useRouter()
@@ -232,6 +232,7 @@ const loadCouponsCount = async () => {
     unusedCouponsCount.value = response.total
   } catch (error) {
     console.error('加载优惠券数量失败:', error)
+    // 静默处理优惠券API错误，不显示提示
   }
 }
 
@@ -243,13 +244,14 @@ const handleEditProfile = () => {
 // 资料更新回调
 const handleProfileUpdated = () => {
   showEditProfile.value = false
-  Toast.success('资料更新成功')
-  userStore.refreshUserInfo()
+  showSuccessToast('资料更新成功')
+  // 重新检查认证状态以刷新用户信息
+  userStore.checkAuthStatus()
 }
 
 // 联系客服
 const handleContactService = () => {
-  Dialog.alert({
+  showDialog({
     title: '联系客服',
     message: '客服电话：400-888-8888\n工作时间：9:00-18:00',
     confirmButtonText: '拨打电话'
@@ -262,17 +264,17 @@ const handleContactService = () => {
 
 // 地址管理
 const handleAddressManage = () => {
-  Toast('地址管理功能开发中')
+  showFailToast('地址管理功能开发中')
 }
 
 // 意见反馈
 const handleFeedback = () => {
-  Toast('意见反馈功能开发中')
+  showFailToast('意见反馈功能开发中')
 }
 
 // 关于我们
 const handleAbout = () => {
-  Dialog.alert({
+  showDialog({
     title: '关于亮车惠',
     message: '亮车惠是一款便民的自助洗车服务应用，致力于为用户提供高效、便捷的洗车体验。\n\n版本号：v1.0.0',
     confirmButtonText: '知道了'
@@ -281,17 +283,20 @@ const handleAbout = () => {
 
 // 设置
 const handleSettings = () => {
-  Toast('设置功能开发中')
+  showFailToast('设置功能开发中')
 }
 
 // 退出登录
 const handleLogout = () => {
-  Dialog.confirm({
+  showDialog({
     title: '退出登录',
     message: '确定要退出登录吗？',
+    showCancelButton: true,
+    confirmButtonText: '确定',
+    cancelButtonText: '取消'
   }).then(() => {
     userStore.logout()
-    Toast.success('已退出登录')
+    showSuccessToast('已退出登录')
     router.push('/auth')
   }).catch(() => {
     // 用户取消
