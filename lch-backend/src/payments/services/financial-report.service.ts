@@ -8,7 +8,7 @@ import { User } from '../../users/entities/user.entity';
 import { OrderStatus, PaymentMethod } from '../../common/interfaces/common.interface';
 import { LoggerService } from '../../common/services/logger.service';
 import { NotificationService } from '../../notification/services/notification.service';
-import { NotificationChannel } from '../../notification/interfaces/notification.interface';
+import { NotificationChannel, NotificationType } from '../../notification/interfaces/notification.interface';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -472,18 +472,18 @@ export class FinancialReportService {
       for (const email of template.recipients.emails) {
         await this.notificationService.sendNotification(
           {
-            type: 'financial_report',
-            recipient: email,
+            type: NotificationType.FINANCIAL_REPORT,
+            channel: NotificationChannel.EMAIL,
+            recipient: { email: email },
             data: {
               reportName: reportData.reportName,
               generatedAt: reportData.generatedAt,
-              filePath: reportData.filePath,
-              summary: reportData.summary
+              period: reportData.period
             }
           },
           {
-            channels: [NotificationChannel.WECHAT_TEMPLATE],
-            fallback: false
+            channels: [NotificationChannel.EMAIL],
+            fallback: true
           }
         );
       }
@@ -556,3 +556,5 @@ export class FinancialReportService {
     return true;
   }
 }
+
+

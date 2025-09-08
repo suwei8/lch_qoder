@@ -8,7 +8,7 @@ import { OrderStatus } from '../../common/interfaces/common.interface';
 import { LoggerService } from '../../common/services/logger.service';
 import { MerchantsService } from '../../merchants/services/merchants.service';
 import { NotificationService } from '../../notification/services/notification.service';
-import { NotificationChannel } from '../../notification/interfaces/notification.interface';
+import { NotificationChannel, NotificationType } from '../../notification/interfaces/notification.interface';
 
 export interface SettlementRule {
   id: string;
@@ -412,9 +412,9 @@ export class IntelligentSettlementService {
   }> {
     const orders = await this.ordersRepository.find({
       where: {
-        merchant_id: merchantId,
+        merchant_id: merchantId,  // 修复变量名
         status: OrderStatus.DONE,
-        finished_at: Between(period.startDate, period.endDate)
+        updated_at: Between(period.startDate, period.endDate)
       }
     });
 
@@ -557,18 +557,17 @@ export class IntelligentSettlementService {
     try {
       await this.notificationService.sendNotification(
         {
-          type: 'settlement_completed',
-          recipient: merchant.contact_phone,
+          type: NotificationType.SETTLEMENT_COMPLETED,
+          channel: NotificationChannel.SMS,
+          recipient: { phone: merchant.contact_phone },
           data: {
             merchantName: merchant.company_name,
-            settlementAmount: record.finalAmount,
-            orderCount: record.orderCount,
-            bonusAmount: record.bonusAmount,
-            settlementDate: record.settlementDate
+            period: `${record.startDate.toLocaleDateString()} - ${record.endDate.toLocaleDateString()}`,
+            amount: record.finalAmount
           }
         },
         {
-          channels: [NotificationChannel.WECHAT_TEMPLATE],
+          channels: [NotificationChannel.SMS],
           fallback: true
         }
       );

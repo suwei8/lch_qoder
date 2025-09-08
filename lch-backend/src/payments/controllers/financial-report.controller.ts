@@ -43,7 +43,12 @@ class CreateTemplateDto {
   };
   recipients: {
     emails: string[];
+    roles?: string[];
     autoSend: boolean;
+  };
+  retention: {
+    days: number;
+    autoDelete: boolean;
   };
 }
 
@@ -81,14 +86,21 @@ export class FinancialReportController {
   @ApiOperation({ summary: '创建报表模板' })
   @ApiResponse({ status: 201, description: '创建成功' })
   @Roles(UserRole.PLATFORM_ADMIN)
-  async createReportTemplate(@Body() templateData: CreateTemplateDto) {
+  async createReportTemplate(@Body() createDto: CreateTemplateDto) {
     const newTemplate: ReportTemplate = {
-      id: `custom_${Date.now()}`,
-      ...templateData,
-      retention: {
-        days: 90,
-        autoDelete: true
-      }
+      id: 'custom_' + Date.now(),
+      name: createDto.name,
+      description: createDto.description,
+      type: createDto.type,
+      schedule: createDto.schedule,
+      data: createDto.data,
+      format: createDto.format,
+      recipients: {
+        emails: createDto.recipients.emails,
+        roles: createDto.recipients.roles || [],  // 添加缺失的roles属性
+        autoSend: createDto.recipients.autoSend
+      },
+      retention: createDto.retention
     };
 
     // 这里应该保存到数据库

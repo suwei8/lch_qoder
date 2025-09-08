@@ -7,7 +7,7 @@ import { OrderStatus, PaymentMethod } from '../../common/interfaces/common.inter
 import { OrdersService } from '../../orders/services/orders.service';
 import { LoggerService } from '../../common/services/logger.service';
 import { NotificationService } from '../../notification/services/notification.service';
-import { NotificationChannel } from '../../notification/interfaces/notification.interface';
+import { NotificationChannel, NotificationType } from '../../notification/interfaces/notification.interface';
 import { WechatPaymentService } from './wechat-payment.service';
 import { UsersService } from '../../users/services/users.service';
 
@@ -337,8 +337,9 @@ export class AutoRefundService {
     try {
       await this.notificationService.sendNotification(
         {
-          type: 'order_manual_review',
-          recipient: 'admin', // 发送给管理员
+          type: NotificationType.ORDER_MANUAL_REVIEW,
+          channel: NotificationChannel.WECHAT_TEMPLATE,
+          recipient: { userId: 1 }, // 发送给管理员，使用正确的recipient格式
           data: {
             orderNo: order.order_no,
             ruleName: rule.name,
@@ -409,7 +410,7 @@ export class AutoRefundService {
       status: OrderStatus.CLOSED,
       refund_amount: refundAmount,
       refund_reason: reason,
-      refund_at: new Date()
+      refund_at: new Date().toISOString()  // 转换为字符串
     });
 
     this.logger.log(
@@ -427,8 +428,12 @@ export class AutoRefundService {
       
       await this.notificationService.sendNotification(
         {
-          type: 'refund_success',
-          recipient: user.wechat_openid || user.phone,
+          type: NotificationType.REFUND_SUCCESS,
+          channel: NotificationChannel.WECHAT_TEMPLATE,
+          recipient: { 
+            openid: user.wechat_openid,
+            phone: user.phone
+          },
           data: {
             orderNo: order.order_no,
             refundAmount: refundAmount,

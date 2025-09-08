@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, MoreThan, LessThan, DataSource, SelectQueryBuilder } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { User } from '../users/entities/user.entity';
-import { Order } from '../orders/entities/order.entity';
-import { LoggerService } from '../common/services/logger.service';
+import { User } from '../../users/entities/user.entity';
+import { Order } from '../../orders/entities/order.entity';
+import { LoggerService } from '../../common/services/logger.service';
 
 export interface QueryPerformanceMetrics {
   queryType: string;
@@ -60,12 +60,11 @@ export class DatabaseOptimizationService {
   private slowQueryThreshold = 1000; // 1秒
 
   constructor(
-    @InjectDataSource()
-    private dataSource: DataSource,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(Order)
     private ordersRepository: Repository<Order>,
+    private dataSource: DataSource,
     private logger: LoggerService
   ) {}
 

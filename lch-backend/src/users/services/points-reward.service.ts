@@ -513,6 +513,55 @@ export class PointsRewardService {
     };
   }
 
+  /**
+   * 获取积分交易记录
+   */
+  async getPointsTransactions(userId: number, options: {
+    type?: PointsType;
+    source?: PointsSource;
+    startDate?: Date;
+    endDate?: Date;
+    page?: number;
+    size?: number;
+  }): Promise<{
+    items: PointsTransaction[];
+    total: number;
+    page: number;
+    size: number;
+  }> {
+    // 模拟数据，实际应该从数据库查询
+    const transactions: PointsTransaction[] = [
+      {
+        id: 1,
+        userId: userId,
+        type: PointsType.EARNED,
+        source: PointsSource.ORDER_PAYMENT,
+        points: 50,
+        balance: 2350,
+        description: '订单消费获得积分',
+        relatedOrderId: 1001,
+        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000)
+      },
+      {
+        id: 2,
+        userId: userId,
+        type: PointsType.EARNED,
+        source: PointsSource.DAILY_SIGNIN,
+        points: 10,
+        balance: 2300,
+        description: '每日签到获得积分',
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+      }
+    ];
+
+    return {
+      items: transactions,
+      total: transactions.length,
+      page: options.page || 1,
+      size: options.size || 20
+    };
+  }
+
   getPointsRules(): PointsRule[] {
     return this.pointsRules;
   }

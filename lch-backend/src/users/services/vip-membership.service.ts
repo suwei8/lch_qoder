@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { Repository, MoreThan, LessThan, Between } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { User } from '../../users/entities/user.entity';
+import { User } from '../entities/user.entity';
 import { Order } from '../../orders/entities/order.entity';
-import { OrderStatus } from '../../common/interfaces/common.interface';
 import { LoggerService } from '../../common/services/logger.service';
-import { UsersService } from '../../users/services/users.service';
 import { NotificationService } from '../../notification/services/notification.service';
-import { NotificationChannel } from '../../notification/interfaces/notification.interface';
+import { NotificationChannel, NotificationType } from '../../notification/interfaces/notification.interface';
+import { UserStatus, OrderStatus } from '../../common/interfaces/common.interface';
+import { UsersService } from './users.service';
 
 export enum VipLevel {
   BRONZE = 'bronze',
@@ -213,7 +213,7 @@ export class VipMembershipService {
       // 获取所有活跃用户
       const users = await this.usersRepository.find({
         where: {
-          status: 'active'
+          status: UserStatus.ACTIVE
         }
       });
 
@@ -591,15 +591,16 @@ export class VipMembershipService {
     try {
       await this.notificationService.sendNotification(
         {
-          type: 'vip_upgrade',
-          recipient: user.wechat_openid || user.phone,
+          type: NotificationType.VIP_UPGRADE,
+          channel: NotificationChannel.WECHAT_TEMPLATE,
+          recipient: { 
+            openid: user.wechat_openid,
+            phone: user.phone
+          },
           data: {
-            userName: user.nickname,
-            oldLevel: user.vip_level || 'bronze',
-            newLevel: newLevel,
-            levelName: config.name,
-            upgradeBonus: config.benefits.upgradeBonus,
-            benefits: config.benefits
+            oldLevel: user.role || 'bronze',
+            newLevel: 'gold',
+            benefits: []
           }
         },
         {

@@ -37,6 +37,8 @@ class CreateActivityDto {
   budget: {
     total: number;
   };
+  status?: ActivityStatus;
+  materials?: any;
 }
 
 class UpdateActivityDto {
@@ -129,7 +131,14 @@ export class FestivalMarketingController {
           ...createDto.budget,
           used: 0,
           remaining: createDto.budget.total
-        }
+        },
+        status: ActivityStatus.DRAFT,
+        materials: {
+          banners: [],
+          posters: [],
+          copywriting: []
+        },
+        targetAudience: createDto.targetAudience || {}
       };
 
       const activity = await this.festivalMarketingService.createFestivalActivity(activityData);

@@ -9,6 +9,11 @@ export enum NotificationType {
   DEVICE_FAULT = 'device_fault',         // 设备故障
   DEVICE_ALARM = 'device_alarm',         // 设备报警
   MERCHANT_SETTLE = 'merchant_settle',   // 商户结算
+  ORDER_MANUAL_REVIEW = 'order_manual_review', // 订单人工审核
+  REFUND_SUCCESS = 'refund_success',     // 退款成功
+  FINANCIAL_REPORT = 'financial_report', // 财务报告
+  SETTLEMENT_COMPLETED = 'settlement_completed', // 结算完成
+  VIP_UPGRADE = 'vip_upgrade'            // VIP升级
 }
 
 /**

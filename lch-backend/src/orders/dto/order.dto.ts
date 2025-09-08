@@ -59,6 +59,18 @@ export class UpdateOrderDto {
   refund_amount?: number;
 
   @IsOptional()
+  @IsString()
+  refund_reason?: string;
+
+  @IsOptional()
+  @IsString()
+  wechat_refund_no?: string;
+
+  @IsOptional()
+  @IsString()
+  refund_at?: string;  // 保持字符串类型，但在服务中转换为Date
+
+  @IsOptional()
   @IsNumber()
   duration_minutes?: number;
 

@@ -2,8 +2,11 @@
   <div class="merchant-login-container">
     <div class="login-box">
       <div class="login-header">
-        <h1 class="login-title">亮车惠</h1>
-        <p class="login-subtitle">商户管理后台</p>
+        <div class="logo-wrapper">
+          <div class="logo-icon">🏪</div>
+        </div>
+        <h1 class="login-title">亮车惠商户平台</h1>
+        <p class="login-subtitle">专业洗车设备运营管理</p>
       </div>
       
       <el-form 
@@ -17,7 +20,7 @@
           <el-input
             v-model="loginForm.phone"
             size="large"
-            placeholder="请输入手机号"
+            placeholder="请输入商户手机号"
             prefix-icon="Phone"
           />
         </el-form-item>
@@ -27,7 +30,7 @@
             v-model="loginForm.password"
             type="password"
             size="large"
-            placeholder="请输入密码"
+            placeholder="请输入商户密码"
             prefix-icon="Lock"
             show-password
           />
@@ -37,35 +40,63 @@
           <el-button 
             type="primary" 
             size="large" 
-            style="width: 100%"
+            class="login-btn"
             :loading="isLoading"
             @click="handleLogin"
           >
-            登录
+            商户登录
           </el-button>
         </el-form-item>
       </el-form>
       
+      <div class="quick-login-section">
+        <div class="section-title">
+          <el-divider>快捷登录</el-divider>
+        </div>
+        <div class="quick-login-buttons">
+          <el-button 
+            type="success" 
+            size="small" 
+            class="demo-btn"
+            @click="handleDemoLogin"
+          >
+            🧪 演示登录
+          </el-button>
+          <el-button 
+            type="warning" 
+            size="small" 
+            class="quick-btn"
+            @click="fillTestAccount"
+          >
+            ⚡ 快速登录
+          </el-button>
+        </div>
+      </div>
+      
       <div class="test-accounts">
-        <el-divider>测试账号</el-divider>
+        <div class="section-title">
+          <el-divider>测试商户账号</el-divider>
+        </div>
         <div class="test-account-list">
           <div 
-            v-for="account in testAccounts" 
+            v-for="(account, index) in testAccounts" 
             :key="account.phone"
             class="test-account-item"
             @click="fillAccount(account)"
           >
             <div class="account-info">
+              <div class="account-index">#{{ index + 1 }}</div>
               <div class="account-name">{{ account.name }}</div>
               <div class="account-phone">{{ account.phone }}</div>
             </div>
-            <el-button size="small" type="text">一键登录</el-button>
+            <el-tag size="small" type="success">测试</el-tag>
           </div>
         </div>
       </div>
       
       <div class="login-footer">
-        <p>© 2024 亮车惠自助洗车系统. All rights reserved.</p>
+        <p>© 2024 亮车惠自助洗车系统 · 商户管理平台</p>
+        <p class="footer-note">专为洗车商户设计的专业管理工具</p>
       </div>
     </div>
   </div>
@@ -90,11 +121,12 @@ const loginForm = reactive({
 
 const loginRules: FormRules = {
   phone: [
-    { required: true, message: '请输入手机号', trigger: 'blur' },
+    { required: true, message: '请输入商户手机号', trigger: 'blur' },
     { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' },
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
+    { required: true, message: '请输入商户密码', trigger: 'blur' },
+    { min: 6, message: '密码长度不能少于6位', trigger: 'blur' },
   ],
 };
 
@@ -111,6 +143,20 @@ const testAccounts = [
 const fillAccount = (account: any) => {
   loginForm.phone = account.phone;
   loginForm.password = '123456';
+};
+
+// 填充第一个测试账号
+const fillTestAccount = () => {
+  if (testAccounts.length > 0) {
+    fillAccount(testAccounts[0]);
+  }
+};
+
+// 演示登录功能
+const handleDemoLogin = () => {
+  // 填充第一个测试账号并自动登录
+  fillTestAccount();
+  handleLogin();
 };
 
 const handleLogin = async () => {
@@ -159,7 +205,7 @@ const handleLogin = async () => {
 <style scoped>
 .merchant-login-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #52c41a 0%, #722ed1 100%);
+  background: linear-gradient(135deg, #1890ff 0%, #0050b3 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -169,8 +215,8 @@ const handleLogin = async () => {
 .login-box {
   width: 450px;
   background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
   padding: 40px;
   max-height: 90vh;
   overflow-y: auto;
@@ -178,18 +224,33 @@ const handleLogin = async () => {
 
 .login-header {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
+}
+
+.logo-wrapper {
+  margin-bottom: 20px;
+}
+
+.logo-icon {
+  font-size: 48px;
+  width: 80px;
+  height: 80px;
+  line-height: 80px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #1890ff 0%, #0050b3 100%);
+  border-radius: 50%;
+  color: white;
 }
 
 .login-header .login-title {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
-  color: #52c41a;
+  color: #1890ff;
   margin-bottom: 8px;
 }
 
 .login-header .login-subtitle {
-  font-size: 16px;
+  font-size: 15px;
   color: #666;
 }
 
@@ -197,8 +258,34 @@ const handleLogin = async () => {
   margin-bottom: 24px;
 }
 
+.login-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #1890ff 0%, #0050b3 100%);
+  border: none;
+  font-weight: 600;
+}
+
+.quick-login-section {
+  margin: 20px 0;
+}
+
+.quick-login-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.demo-btn, .quick-btn {
+  border-radius: 20px;
+}
+
+.section-title {
+  margin: 15px 0;
+}
+
 .test-accounts {
-  margin: 30px 0;
+  margin: 20px 0;
 }
 
 .test-account-list {
@@ -210,23 +297,36 @@ const handleLogin = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px;
+  padding: 12px 15px;
   border: 1px solid #e8e8e8;
-  border-radius: 6px;
-  margin-bottom: 8px;
+  border-radius: 8px;
+  margin-bottom: 10px;
   cursor: pointer;
   transition: all 0.3s;
+  background: #fafafa;
 }
 
 .test-account-item:hover {
-  border-color: #52c41a;
-  background-color: #f6ffed;
+  border-color: #1890ff;
+  background-color: #e6f7ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
+}
+
+.account-info {
+  flex: 1;
+}
+
+.account-index {
+  font-size: 12px;
+  color: #1890ff;
+  font-weight: 600;
 }
 
 .account-info .account-name {
   font-weight: 500;
   color: #333;
-  margin-bottom: 4px;
+  margin: 4px 0;
 }
 
 .account-info .account-phone {
@@ -237,11 +337,19 @@ const handleLogin = async () => {
 .login-footer {
   text-align: center;
   margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
 }
 
 .login-footer p {
   font-size: 12px;
   color: #999;
+  margin: 5px 0;
+}
+
+.footer-note {
+  color: #1890ff !important;
+  font-weight: 500;
 }
 
 /* 滚动条样式 */
@@ -265,5 +373,21 @@ const handleLogin = async () => {
 .test-account-list::-webkit-scrollbar-thumb:hover,
 .login-box::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+  .login-box {
+    width: 95%;
+    padding: 30px 20px;
+  }
+  
+  .test-account-item {
+    padding: 10px 12px;
+  }
+  
+  .account-info .account-name {
+    font-size: 14px;
+  }
 }
 </style>
