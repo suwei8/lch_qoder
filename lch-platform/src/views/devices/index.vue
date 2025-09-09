@@ -67,6 +67,10 @@
           <el-icon><Download /></el-icon>
           导出报表
         </el-button>
+        <el-button @click="goToAnalytics">
+          <el-icon><TrendCharts /></el-icon>
+          数据分析
+        </el-button>
       </div>
       <div class="toolbar-right">
         <el-input
@@ -185,12 +189,20 @@
         @current-change="handleCurrentChange"
       />
     </div>
+
+    <!-- 设备控制面板 -->
+    <DeviceControlPanel
+      v-model:visible="controlPanelVisible"
+      :device="selectedDevice"
+      @refresh="handleControlPanelRefresh"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { useRouter } from 'vue-router';
 import { 
   Setting, 
   CircleCheck, 
@@ -200,15 +212,23 @@ import {
   Refresh, 
   Download, 
   Search,
-  ArrowDown
+  ArrowDown,
+  TrendCharts
 } from '@element-plus/icons-vue';
 import { deviceApi } from '@/api/device';
 import type { Device, DeviceListParams } from '@/types/device';
 import { formatTime } from '@/utils/format';
+import DeviceControlPanel from '@/components/DeviceControlPanel.vue';
+
+// Router
+const router = useRouter();
 
 // 响应式数据
 const loading = ref(false);
 const deviceList = ref<Device[]>([]);
+// 设备控制面板
+const controlPanelVisible = ref(false);
+const selectedDevice = ref<Device | null>(null);
 const deviceStats = ref({
   totalDevices: 0,
   onlineDevices: 0,
@@ -391,6 +411,11 @@ const handleExport = () => {
   ElMessage.info('导出功能开发中');
 };
 
+// 跳转到设备分析页面
+const goToAnalytics = () => {
+  router.push('/devices/analytics');
+};
+
 const handleCommand = async (command: string, row: Device) => {
   switch (command) {
     case 'sync':
@@ -419,7 +444,9 @@ const handleCommand = async (command: string, row: Device) => {
       });
       break;
     case 'control':
-      ElMessage.info('设备控制功能开发中');
+      // 打开设备控制面板
+      selectedDevice.value = row;
+      controlPanelVisible.value = true;
       break;
     case 'delete':
       ElMessageBox.confirm('确定要删除这个设备吗？', '提示', {
@@ -438,6 +465,12 @@ const handleCommand = async (command: string, row: Device) => {
       });
       break;
   }
+};
+
+// 处理控制面板事件
+const handleControlPanelRefresh = () => {
+  getDeviceList();
+  getDeviceStats();
 };
 
 // 初始化

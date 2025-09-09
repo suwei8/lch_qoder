@@ -52,117 +52,135 @@
       </el-col>
     </el-row>
 
-    <!-- 操作栏 -->
-    <div class="toolbar">
-      <div class="toolbar-left">
-        <el-button type="primary" @click="handleSettlement">
-          <el-icon><Money /></el-icon>
-          批量结算
-        </el-button>
-        <el-button @click="handleExportFinance">
-          <el-icon><Download /></el-icon>
-          导出财务报表
-        </el-button>
-      </div>
-      <div class="toolbar-right">
-        <el-date-picker
-          v-model="searchForm.dateRange"
-          type="daterange"
-          range-separator="至"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          style="width: 240px;"
-        />
-        <el-select
-          v-model="searchForm.type"
-          placeholder="交易类型"
-          style="width: 120px; margin-left: 10px;"
-          clearable
-        >
-          <el-option label="收入" value="income" />
-          <el-option label="结算" value="settlement" />
-          <el-option label="退款" value="refund" />
-        </el-select>
-        <el-button type="primary" @click="handleSearch" style="margin-left: 10px;">
-          <el-icon><Search /></el-icon>
-          搜索
-        </el-button>
-      </div>
-    </div>
+    <!-- 导航标签 -->
+    <el-tabs v-model="activeTab" class="finance-tabs">
+      <el-tab-pane label="交易记录" name="transactions">
+        <!-- 操作栏 -->
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <el-button type="primary" @click="handleSettlement">
+              <el-icon><Money /></el-icon>
+              批量结算
+            </el-button>
+            <el-button @click="handleExportFinance">
+              <el-icon><Download /></el-icon>
+              导出财务报表
+            </el-button>
+          </div>
+          <div class="toolbar-right">
+            <el-date-picker
+              v-model="searchForm.dateRange"
+              type="daterange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              style="width: 240px;"
+            />
+            <el-select
+              v-model="searchForm.type"
+              placeholder="交易类型"
+              style="width: 120px; margin-left: 10px;"
+              clearable
+            >
+              <el-option label="收入" value="income" />
+              <el-option label="结算" value="settlement" />
+              <el-option label="退款" value="refund" />
+            </el-select>
+            <el-button type="primary" @click="handleSearch" style="margin-left: 10px;">
+              <el-icon><Search /></el-icon>
+              搜索
+            </el-button>
+          </div>
+        </div>
 
-    <!-- 财务记录列表 -->
-    <el-table v-loading="loading" :data="financeList" stripe>
-      <el-table-column prop="id" label="流水号" width="100" />
-      <el-table-column prop="order_id" label="订单号" width="120" />
-      <el-table-column prop="merchant_name" label="商户" width="150" />
-      <el-table-column label="类型" width="100">
-        <template #default="{ row }">
-          <el-tag 
-            :type="getTypeColor(row.type)"
-            effect="light"
-          >
-            {{ getTypeText(row.type) }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="amount" label="金额" width="120">
-        <template #default="{ row }">
-          <span :class="{ 'text-red': row.amount < 0, 'text-green': row.amount > 0 }">
-            {{ row.amount > 0 ? '+' : '' }}¥{{ Math.abs(row.amount) }}
-          </span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="platform_fee" label="平台费用" width="100">
-        <template #default="{ row }">
-          ¥{{ row.platform_fee || 0 }}
-        </template>
-      </el-table-column>
-      <el-table-column prop="merchant_amount" label="商户收益" width="120">
-        <template #default="{ row }">
-          ¥{{ row.merchant_amount || 0 }}
-        </template>
-      </el-table-column>
-      <el-table-column label="状态" width="100">
-        <template #default="{ row }">
-          <el-tag 
-            :type="getStatusColor(row.status)"
-            effect="plain"
-          >
-            {{ getStatusText(row.status) }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="created_at" label="创建时间" width="150">
-        <template #default="{ row }">
-          {{ formatTime(row.created_at) }}
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="120" fixed="right">
-        <template #default="{ row }">
-          <el-button 
-            type="primary" 
-            size="small" 
-            link
-            @click="handleViewDetail(row)"
-          >
-            查看详情
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+        <!-- 财务记录列表 -->
+        <el-table v-loading="loading" :data="financeList" stripe>
+          <el-table-column type="selection" width="50" />
+          <el-table-column prop="id" label="流水号" width="100" />
+          <el-table-column prop="order_id" label="订单号" width="120" />
+          <el-table-column prop="merchant_name" label="商户" width="150" />
+          <el-table-column label="类型" width="100">
+            <template #default="{ row }">
+              <el-tag 
+                :type="getTypeColor(row.type)"
+                effect="light"
+              >
+                {{ getTypeText(row.type) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="amount" label="金额" width="120">
+            <template #default="{ row }">
+              <span :class="{ 'text-red': row.amount < 0, 'text-green': row.amount > 0 }">
+                {{ row.amount > 0 ? '+' : '' }}¥{{ Math.abs(row.amount) }}
+              </span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="platform_fee" label="平台费用" width="100">
+            <template #default="{ row }">
+              ¥{{ row.platform_fee || 0 }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="merchant_amount" label="商户收益" width="120">
+            <template #default="{ row }">
+              ¥{{ row.merchant_amount || 0 }}
+            </template>
+          </el-table-column>
+          <el-table-column label="状态" width="100">
+            <template #default="{ row }">
+              <el-tag 
+                :type="getStatusColor(row.status)"
+                effect="plain"
+              >
+                {{ getStatusText(row.status) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="created_at" label="创建时间" width="150">
+            <template #default="{ row }">
+              {{ formatTime(row.created_at) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="120" fixed="right">
+            <template #default="{ row }">
+              <el-button 
+                type="primary" 
+                size="small" 
+                link
+                @click="handleViewDetail(row)"
+              >
+                查看详情
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
 
-    <!-- 分页 -->
-    <div class="pagination-container">
-      <el-pagination
-        v-model:current-page="pagination.page"
-        v-model:page-size="pagination.limit"
-        :total="pagination.total"
-        :page-sizes="[10, 20, 50, 100]"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
-    </div>
+        <!-- 分页 -->
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="pagination.page"
+            v-model:page-size="pagination.limit"
+            :total="pagination.total"
+            :page-sizes="[10, 20, 50, 100]"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+          />
+        </div>
+      </el-tab-pane>
+
+      <el-tab-pane label="提现审核" name="withdrawals">
+        <WithdrawalAudit />
+      </el-tab-pane>
+
+      <el-tab-pane label="分润管理" name="commission">
+        <CommissionManager />
+      </el-tab-pane>
+
+      <el-tab-pane label="财务报表" name="reports">
+        <FinanceReports />
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
@@ -178,6 +196,9 @@ import {
   Search
 } from '@element-plus/icons-vue';
 import { formatTime } from '@/utils/format';
+import WithdrawalAudit from '@/components/WithdrawalAudit.vue';
+import CommissionManager from '@/components/CommissionManager.vue';
+import FinanceReports from '@/components/FinanceReports.vue';
 
 // 财务记录接口定义
 interface FinanceRecord {
@@ -194,6 +215,7 @@ interface FinanceRecord {
 }
 
 // 响应式数据
+const activeTab = ref('transactions');
 const loading = ref(false);
 const financeList = ref<FinanceRecord[]>([]);
 const financeStats = ref({
@@ -439,5 +461,17 @@ onMounted(() => {
 
 .text-green {
   color: #67c23a;
+}
+
+.finance-tabs {
+  margin-top: 20px;
+}
+
+.finance-tabs .el-tabs__header {
+  margin: 0 0 20px;
+}
+
+.finance-tabs .el-tabs__content {
+  padding: 0;
 }
 </style>

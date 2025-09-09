@@ -127,6 +127,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '设备管理', icon: 'Monitor' },
       },
       {
+        path: '/devices/analytics',
+        name: 'DeviceAnalytics',
+        component: () => import('@/views/devices/analytics.vue'),
+        meta: { title: '设备分析', hidden: true },
+      },
+      {
         path: '/orders',
         name: 'Orders',
         component: () => import('@/views/orders/index.vue'),
