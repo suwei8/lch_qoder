@@ -347,7 +347,7 @@ const authStore = useAuthStore();
 // 响应式数据
 const refreshing = ref(false);
 const lastUpdateTime = ref(formatDateTime(new Date()));
-let refreshTimer: number;
+let refreshTimer: NodeJS.Timeout | null = null;
 
 // 统计数据
 const stats = reactive({
@@ -855,6 +855,7 @@ onMounted(() => {
 onUnmounted(() => {
   if (refreshTimer) {
     clearInterval(refreshTimer);
+    refreshTimer = null;
   }
 });
 </script>

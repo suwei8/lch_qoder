@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard-widgets">
     <!-- 实时监控小部件 -->
-    <div class="widget-card" v-if="showRealTimeWidget">
+    <div class="widget-card" v-if="props.showRealTimeWidget">
       <div class="widget-header">
         <h4>实时监控</h4>
         <el-tag size="small" type="success">实时</el-tag>
@@ -23,7 +23,7 @@
     </div>
 
     <!-- 性能指标小部件 -->
-    <div class="widget-card" v-if="showPerformanceWidget">
+    <div class="widget-card" v-if="props.showPerformanceWidget">
       <div class="widget-header">
         <h4>性能指标</h4>
       </div>
@@ -33,7 +33,7 @@
     </div>
 
     <!-- 热门地区小部件 -->
-    <div class="widget-card" v-if="showRegionWidget">
+    <div class="widget-card" v-if="props.showRegionWidget">
       <div class="widget-header">
         <h4>热门地区</h4>
       </div>
@@ -49,7 +49,7 @@
     </div>
 
     <!-- 设备状态概览 -->
-    <div class="widget-card" v-if="showDeviceWidget">
+    <div class="widget-card" v-if="props.showDeviceWidget">
       <div class="widget-header">
         <h4>设备状态</h4>
       </div>
@@ -177,7 +177,7 @@ const performanceOption = computed(() => ({
 }));
 
 // 定时器
-let refreshTimer: number;
+let refreshTimer: NodeJS.Timeout | null = null;
 
 // 刷新数据
 const refreshData = () => {
@@ -200,6 +200,7 @@ onMounted(() => {
 onUnmounted(() => {
   if (refreshTimer) {
     clearInterval(refreshTimer);
+    refreshTimer = null;
   }
 });
 </script>
