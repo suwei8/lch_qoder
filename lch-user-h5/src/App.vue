@@ -10,9 +10,13 @@ import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
 
-onMounted(() => {
-  // 初始化微信配置
-  userStore.initWechatConfig()
+onMounted(async () => {
+  try {
+    // 初始化微信配置，添加错误处理
+    await userStore.initWechatConfig()
+  } catch (error) {
+    console.warn('微信配置初始化失败，但不影响应用运行:', error)
+  }
 })
 </script>
 

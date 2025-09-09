@@ -21,6 +21,12 @@ NProgress.configure({ showSpinner: false });
 
 const routes: RouteRecordRaw[] = [
   {
+    path: '/test',
+    name: 'Test',
+    component: () => import('@/views/test.vue'),
+    meta: { title: '测试页面', requiresAuth: false },
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/auth/Login.vue'),
