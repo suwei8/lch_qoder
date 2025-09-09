@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import { resolve } from 'path';
+import { fileURLToPath, URL } from 'node:url';
 
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production'
@@ -11,11 +11,11 @@ export default defineConfig(({ mode }) => {
     ],
     resolve: {
       alias: {
-        '@': resolve(__dirname, 'src'),
-        '@components': resolve(__dirname, 'src/components'),
-        '@views': resolve(__dirname, 'src/views'),
-        '@utils': resolve(__dirname, 'src/utils'),
-        '@api': resolve(__dirname, 'src/api'),
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
+        '@components': fileURLToPath(new URL('./src/components', import.meta.url)),
+        '@views': fileURLToPath(new URL('./src/views', import.meta.url)),
+        '@utils': fileURLToPath(new URL('./src/utils', import.meta.url)),
+        '@api': fileURLToPath(new URL('./src/api', import.meta.url)),
       },
     },
     server: {
@@ -36,11 +36,11 @@ export default defineConfig(({ mode }) => {
       chunkSizeWarningLimit: 1500,
       rollupOptions: {
         output: {
-          manualChunks: (id) => {
-            if (id.includes('node_modules')) {
-              if (id.includes('vue')) return 'vue-vendor'
-              if (id.includes('element-plus')) return 'ui-vendor'
-              if (id.includes('echarts')) return 'charts-vendor'
+          manualChunks: (id: string) => {
+            if (id.indexOf('node_modules') !== -1) {
+              if (id.indexOf('vue') !== -1) return 'vue-vendor'
+              if (id.indexOf('element-plus') !== -1) return 'ui-vendor'
+              if (id.indexOf('echarts') !== -1) return 'charts-vendor'
               return 'vendor'
             }
           },

@@ -160,7 +160,7 @@
           >
             编辑
           </el-button>
-          <el-dropdown @command="(command) => handleCommand(command, row)">
+          <el-dropdown @command="(command: string) => handleCommand(command, row)">
             <el-button type="primary" size="small" link>
               更多<el-icon><ArrowDown /></el-icon>
             </el-button>
@@ -217,6 +217,7 @@ import {
 } from '@element-plus/icons-vue';
 import { deviceApi } from '@/api/device';
 import type { Device, DeviceListParams } from '@/types/device';
+import { DeviceStatus, DeviceWorkStatus } from '@/types/common';
 import { formatTime } from '@/utils/format';
 import DeviceControlPanel from '@/components/DeviceControlPanel.vue';
 
@@ -255,9 +256,9 @@ const pagination = reactive({
 });
 
 // 生成模拟设备数据
-const generateMockDevices = () => {
-  const statuses = ['online', 'offline', 'error', 'maintenance'] as const;
-  const workStatuses = ['idle', 'working', 'completed', 'error'] as const;
+const generateMockDevices = (): Device[] => {
+  const statuses = [DeviceStatus.ONLINE, DeviceStatus.OFFLINE, DeviceStatus.ERROR, DeviceStatus.MAINTENANCE];
+  const workStatuses = [DeviceWorkStatus.IDLE, DeviceWorkStatus.WORKING, DeviceWorkStatus.COMPLETED, DeviceWorkStatus.ERROR];
   const deviceNames = ['洗车机01号', '洗车机02号', '洗车机03号', '洗车机04号', '洗车机05号'];
   const locations = ['北京市朝阳区建国门01号', '上海市浦东新区世纪大道02号', '广州市天河区珠江新03号'];
   
@@ -265,13 +266,17 @@ const generateMockDevices = () => {
     id: i + 1,
     devid: `DEV${String(i + 1).padStart(6, '0')}`,
     name: `${deviceNames[i % deviceNames.length]}`,
+    merchant_id: Math.floor(i / 5) + 1, // 每5个设备属于一个商户
     location: locations[i % locations.length],
+    latitude: 39.9042 + (Math.random() - 0.5) * 0.1, // 北京附近的随机坐标
+    longitude: 116.4074 + (Math.random() - 0.5) * 0.1,
     status: statuses[i % statuses.length],
     work_status: workStatuses[i % workStatuses.length],
-    price_per_minute: (Math.random() * 2 + 1).toFixed(2),
+    price_per_minute: Math.floor((Math.random() * 2 + 1) * 100) / 100, // 转换为数字类型
     total_revenue: Math.floor(Math.random() * 100000),
     last_online_at: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000),
-    created_at: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000)
+    created_at: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
+    updated_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000)
   }));
 };
 

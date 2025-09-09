@@ -9,9 +9,9 @@ import type {
   OrderPaymentRequest,
   OrderRefundRequest,
   OrderReviewRequest,
-  OrderAnalytics,
-  PaginationResponse
+  OrderAnalytics
 } from '@/types/order';
+import type { PaginationResponse } from '@/types/common';
 
 export const orderApi = {
   // 获取订单列表
@@ -60,7 +60,7 @@ export const orderApi = {
   },
 
   // 获取订单统计
-  getStats(params?: { startDate?: string; endDate?: string }): Promise<OrderStats> {
+  getOrderStats(params?: { startDate?: string; endDate?: string }): Promise<OrderStats> {
     return request.get('/orders/stats', { params });
   },
 

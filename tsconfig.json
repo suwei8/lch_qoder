@@ -13,8 +13,8 @@
     "declaration": false
   },
   "include": [
-    "playwright.config.ts",
-    "tests/**/*"
+    "test/playwright.config.ts",
+    "test/**/*"
   ],
   "exclude": [
     "node_modules",

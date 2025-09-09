@@ -45,7 +45,7 @@
             <el-col :span="8">
               <div class="info-item">
                 <label>最后在线:</label>
-                <span>{{ formatTime(device.last_online_at) }}</span>
+                <span>{{ device.last_online_at ? formatTime(device.last_online_at) : 'N/A' }}</span>
               </div>
             </el-col>
             <el-col :span="8">
@@ -137,7 +137,7 @@
                   type="danger" 
                   :disabled="device.status !== 'online' || controlLoading"
                   @click="handleResetDevice"
-                  :loading="controlLoading && currentCommand === 'reset'"
+                  :loading="controlLoading && currentCommand === 'reboot'"
                   block
                 >
                   <el-icon><RefreshRight /></el-icon>
@@ -283,6 +283,7 @@ import {
 } from '@element-plus/icons-vue';
 import { deviceApi } from '@/api/device';
 import type { Device } from '@/types/device';
+import type { DeviceWorkStatus } from '@/types/common';
 import { formatTime } from '@/utils/format';
 
 // Props
@@ -349,10 +350,10 @@ const operationLogs = ref([
 // 监听设备变化，更新配置表单
 watch(() => props.device, (device) => {
   if (device) {
-    configForm.pricePerMinute = parseFloat(device.price_per_minute) || 0;
-    configForm.maxDuration = device.max_duration || 60;
-    configForm.warningTemperature = device.warning_temperature || 80;
-    configForm.lowLevelWarning = device.low_level_warning || 20;
+    configForm.pricePerMinute = device.price_per_minute || 0;
+    configForm.maxDuration = device.max_duration_minutes || 60;
+    configForm.warningTemperature = 80; // 默认值，因为 Device 类型中没有这个字段
+    configForm.lowLevelWarning = 20; // 默认值，因为 Device 类型中没有这个字段
     
     // 加载实时数据
     refreshRealTimeData();
@@ -380,7 +381,8 @@ const getStatusText = (status: string) => {
   return statusMap[status] || '未知';
 };
 
-const getWorkStatusType = (workStatus: string) => {
+const getWorkStatusType = (workStatus: DeviceWorkStatus | undefined) => {
+  if (!workStatus) return 'info';
   const statusMap: Record<string, string> = {
     idle: 'info',
     working: 'warning',
@@ -390,7 +392,8 @@ const getWorkStatusType = (workStatus: string) => {
   return statusMap[workStatus] || 'info';
 };
 
-const getWorkStatusText = (workStatus: string) => {
+const getWorkStatusText = (workStatus: DeviceWorkStatus | undefined) => {
+  if (!workStatus) return '未知';
   const statusMap: Record<string, string> = {
     idle: '空闲',
     working: '工作中',
@@ -484,11 +487,11 @@ const handleResetDevice = async () => {
   if (!result) return;
   
   try {
-    currentCommand.value = 'reset';
+    currentCommand.value = 'reboot';
     controlLoading.value = true;
     
     await deviceApi.controlDevice(props.device.id, {
-      command: 'reset',
+      command: 'reboot', // 使用 'reboot' 而不是 'reset'
       parameters: {}
     });
     
@@ -544,10 +547,10 @@ const saveConfig = async () => {
     configLoading.value = true;
     
     await deviceApi.updateDevice(props.device.id, {
-      price_per_minute: configForm.pricePerMinute.toString(),
-      max_duration: configForm.maxDuration,
-      warning_temperature: configForm.warningTemperature,
-      low_level_warning: configForm.lowLevelWarning,
+      price_per_minute: configForm.pricePerMinute,
+      max_duration_minutes: configForm.maxDuration,
+      // Note: warning_temperature and low_level_warning are not in platform DTO
+      // Remove or add them to UpdateDeviceDto if needed
     });
     
     ElMessage.success('配置保存成功');
@@ -562,10 +565,10 @@ const saveConfig = async () => {
 // 重置配置
 const resetConfig = () => {
   if (props.device) {
-    configForm.pricePerMinute = parseFloat(props.device.price_per_minute) || 0;
-    configForm.maxDuration = props.device.max_duration || 60;
-    configForm.warningTemperature = props.device.warning_temperature || 80;
-    configForm.lowLevelWarning = props.device.low_level_warning || 20;
+    configForm.pricePerMinute = props.device.price_per_minute || 0;
+    configForm.maxDuration = props.device.max_duration_minutes || 60;
+    configForm.warningTemperature = 80; // 默认值
+    configForm.lowLevelWarning = 20; // 默认值
   }
 };
 

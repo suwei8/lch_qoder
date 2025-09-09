@@ -442,7 +442,7 @@ import {
   ArrowDown
 } from '@element-plus/icons-vue';
 import { orderApi } from '@/api/order';
-import type { Order as ApiOrder, OrderListParams } from '@/types/order';
+import type { OrderListParams } from '@/types/order';
 import { formatDate } from '@/utils/format';
 
 // 本地订单接口定义（用于前端显示）

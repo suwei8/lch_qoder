@@ -9,9 +9,9 @@ import type {
   DeviceErrorLog,
   DeviceQuery,
   DeviceUpdateRequest,
-  DeviceMonitorData,
-  PaginationResponse
+  DeviceMonitorData
 } from '@/types/device';
+import type { PaginationResponse } from '@/types/common';
 
 export const deviceApi = {
   // 获取设备列表

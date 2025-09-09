@@ -7,9 +7,9 @@ import type {
   MerchantOrder,
   WithdrawalRecord,
   MerchantQuery,
-  WithdrawalRequest,
-  PaginationResponse
+  WithdrawalRequest
 } from '@/types/merchant';
+import type { PaginationResponse } from '@/types/common';
 
 export const merchantApi = {
   // 获取商户信息

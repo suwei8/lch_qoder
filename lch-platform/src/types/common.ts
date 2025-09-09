@@ -66,6 +66,8 @@ export enum DeviceStatus {
 export enum DeviceWorkStatus {
   IDLE = 'idle',
   WORKING = 'working',
+  COMPLETED = 'completed',
+  ERROR = 'error',
   PAUSED = 'paused'
 }
 

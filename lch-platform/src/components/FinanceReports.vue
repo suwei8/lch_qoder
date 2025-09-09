@@ -148,7 +148,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
 import {
   TrendCharts,
