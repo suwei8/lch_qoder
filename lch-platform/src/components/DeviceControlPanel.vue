@@ -1,7 +1,8 @@
 <template>
   <div class="device-control-panel">
     <el-dialog
-      v-model="visible"
+      :model-value="visible"
+      @update:model-value="$emit('update:visible', $event)"
       :title="`设备控制 - ${device?.name || '未知设备'}`"
       width="900px"
       :before-close="handleClose"

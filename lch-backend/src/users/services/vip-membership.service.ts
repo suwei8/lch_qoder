@@ -6,7 +6,7 @@ import { User } from '../entities/user.entity';
 import { Order } from '../../orders/entities/order.entity';
 import { LoggerService } from '../../common/services/logger.service';
 import { NotificationService } from '../../notification/services/notification.service';
-import { NotificationChannel, NotificationType } from '../../notification/interfaces/notification.interface';
+import { NotificationType } from '../../notification/entities/notification.entity';
 import { UserStatus, OrderStatus } from '../../common/interfaces/common.interface';
 import { UsersService } from './users.service';
 
@@ -589,24 +589,11 @@ export class VipMembershipService {
    */
   private async sendUpgradeNotification(user: User, newLevel: VipLevel, config: VipLevelConfig): Promise<void> {
     try {
-      await this.notificationService.sendNotification(
-        {
-          type: NotificationType.VIP_UPGRADE,
-          channel: NotificationChannel.WECHAT_TEMPLATE,
-          recipient: { 
-            openid: user.wechat_openid,
-            phone: user.phone
-          },
-          data: {
-            oldLevel: user.role || 'bronze',
-            newLevel: 'gold',
-            benefits: []
-          }
-        },
-        {
-          channels: [NotificationChannel.WECHAT_TEMPLATE],
-          fallback: true
-        }
+      await this.notificationService.sendUserNotification(
+        user.id,
+        NotificationType.PROMOTION,
+        'VIP升级通知',
+        `恭喜您成功升级为VIP金卡会员！`
       );
     } catch (error) {
       this.logger.error(`发送升级通知失败: ${error.message}`, error.stack, 'VipMembershipService');

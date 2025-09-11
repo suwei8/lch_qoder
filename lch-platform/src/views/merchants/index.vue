@@ -3,10 +3,11 @@
     <div class="page-header">
       <h1 class="page-title">商户管理</h1>
       <div class="page-actions">
-        <el-button type="primary" @click="showCreateDialog = true">
+        <!-- 新增商户功能暂未实现 -->
+        <!-- <el-button type="primary" @click="showCreateDialog = true">
           <el-icon><Plus /></el-icon>
           新增商户
-        </el-button>
+        </el-button> -->
       </div>
     </div>
 
@@ -99,10 +100,10 @@
         style="width: 100%"
       >
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="business_name" label="商户名称" width="200" />
-        <el-table-column prop="contact_name" label="联系人" width="120" />
+        <el-table-column prop="company_name" label="商户名称" width="200" />
+        <el-table-column prop="contact_person" label="联系人" width="120" />
         <el-table-column prop="contact_phone" label="联系电话" width="140" />
-        <el-table-column prop="business_address" label="地址" min-width="200" />
+        <el-table-column prop="address" label="地址" min-width="200" />
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</el-tag>
@@ -155,23 +156,21 @@ import {
 } from '@element-plus/icons-vue';
 import { merchantApi } from '@/api/merchant';
 import type { Merchant, MerchantListParams } from '@/types/merchant';
+import { MerchantStatus } from '@/types/common';
 import { formatDate } from '@/utils/format';
 
 // 响应式数据
 const loading = ref(false);
-const saving = ref(false);
 const merchants = ref<Merchant[]>([]);
-const showCreateDialog = ref(false);
 const showDetailDialog = ref(false);
-const editingMerchant = ref<Merchant | null>(null);
 const selectedMerchant = ref<Merchant | null>(null);
 
 // 统计数据
 const stats = ref({
-  totalMerchants: 156,
-  approvedMerchants: 128,
-  pendingMerchants: 23,
-  totalRevenue: 23450000,
+  totalMerchants: 0,
+  approvedMerchants: 0,
+  pendingMerchants: 0,
+  totalRevenue: 0,
 });
 
 // 搜索表单
@@ -189,46 +188,10 @@ const pagination = reactive({
   total: 0,
 });
 
-// 生成模拟商户数据
-const generateMockMerchants = (): Merchant[] => {
-  const statuses = ['pending', 'approved', 'rejected', 'suspended'] as const;
-  const names = ['星光洗车店', '阳光汽车美容', '快洁洗车', '蓝天洗车中心', '金辉汽车服务', '绿色洗车', '便民洗车店', '车美人洗车'];
-  const contacts = ['张三', '李四', '王五', '赵六', '钱七', '孙八', '周九', '吴十'];
-  
-  return Array.from({ length: 50 }, (_, i) => ({
-    id: i + 1,
-    user_id: i + 1,
-    business_name: `${names[i % names.length]}${i > 7 ? i - 7 : ''}`,
-    contact_name: contacts[i % contacts.length],
-    contact_phone: `138${String(i).padStart(8, '0')}`,
-    business_address: `北京市朝阳区测试街道${i + 1}号`,
-    business_license_number: `91110000${String(i).padStart(8, '0')}`,
-    status: statuses[i % statuses.length],
-    total_revenue: Math.floor(Math.random() * 500000),
-    pending_settlement: Math.floor(Math.random() * 50000),
-    remark: i % 3 === 0 ? '资质齐全' : undefined,
-    created_at: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
-    updated_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
-    approved_at: statuses[i % statuses.length] === 'approved' ? new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000) : undefined,
-  }));
-};
-
 // 加载商户列表
 const loadMerchants = async () => {
   loading.value = true;
   
-  // 始终使用模拟数据确保页面正常显示
-  await new Promise(resolve => setTimeout(resolve, 500)); // 模拟加载延迟
-  
-  const mockData = generateMockMerchants();
-  const start = (pagination.page - 1) * pagination.pageSize;
-  const end = start + pagination.pageSize;
-  merchants.value = mockData.slice(start, end);
-  pagination.total = mockData.length;
-  
-  loading.value = false;
-  
-  // 后台尝试真实API调用（不阻塞UI）
   try {
     const params = {
       ...searchForm,
@@ -236,11 +199,16 @@ const loadMerchants = async () => {
       limit: pagination.pageSize,
     };
     const response = await merchantApi.getMerchants(params);
-    // 如果API成功，替换为真实数据
-    merchants.value = response.data || merchants.value;
-    pagination.total = response.total || pagination.total;
+    merchants.value = response.data || [];
+    pagination.total = response.total || 0;
   } catch (error) {
-    console.warn('商户API调用失败，继续使用模拟数据:', error);
+    console.error('加载商户列表失败:', error);
+    // 如果API失败，显示空数据而不是模拟数据
+    merchants.value = [];
+    pagination.total = 0;
+    ElMessage.error('加载商户列表失败');
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -251,7 +219,13 @@ const loadStats = async () => {
     stats.value = statsData;
   } catch (error) {
     console.error('加载统计数据失败:', error);
-    // 使用默认模拟数据
+    // 使用默认模拟数据，但不显示错误信息
+    stats.value = {
+      totalMerchants: 0,
+      approvedMerchants: 0,
+      pendingMerchants: 0,
+      totalRevenue: 0,
+    };
   }
 };
 
@@ -273,36 +247,32 @@ const viewMerchant = (merchant: Merchant) => {
 
 // 编辑商户
 const editMerchant = (merchant: Merchant) => {
-  editingMerchant.value = merchant;
-  showCreateDialog.value = true;
+  // 编辑功能暂未实现
+  ElMessage.info('编辑功能暂未实现');
 };
 
 // 审核商户
-const approveMerchant = (merchant: Merchant) => {
-  ElMessageBox.confirm(`确定要通过「${merchant.business_name}」的审核申请吗？`, '确认审核', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'success'
-  }).then(() => {
-    // 直接更新本地状态
-    merchant.status = 'approved';
+const approveMerchant = async (merchant: Merchant) => {
+  try {
+    await ElMessageBox.confirm(`确定要通过「${merchant.company_name}」的审核申请吗？`, '确认审核', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'success'
+    });
+    
+    await merchantApi.approveMerchant(merchant.id, { status: MerchantStatus.APPROVED });
+    merchant.status = MerchantStatus.APPROVED;
     merchant.approved_at = new Date();
     ElMessage.success('审核通过成功');
-    
-    // 后台尝试API调用
-    try {
-      merchantApi.approveMerchant(merchant.id, { status: 'approved' });
-    } catch (error) {
-      console.warn('API调用失败:', error);
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('审核失败:', error);
+      ElMessage.error('审核失败，请重试');
     }
-  });
+  }
 };
 
-// 保存商户
-const saveMerchant = async () => {
-  ElMessage.success('保存功能开发中');
-  showCreateDialog.value = false;
-};
+
 
 // 状态相关
 const getStatusType = (status: string) => {

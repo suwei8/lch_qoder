@@ -151,6 +151,18 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '财务管理', icon: 'Money' },
       },
       {
+        path: '/coupons',
+        name: 'Coupons',
+        component: () => import('@/views/coupons/index.vue'),
+        meta: { title: '优惠券管理', icon: 'Ticket' },
+      },
+      {
+        path: '/notifications',
+        name: 'Notifications',
+        component: () => import('@/views/notifications/index.vue'),
+        meta: { title: '通知管理', icon: 'Bell' },
+      },
+      {
         path: '/system',
         name: 'System',
         meta: { title: '系统管理', icon: 'Setting' },

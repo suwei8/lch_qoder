@@ -4,6 +4,18 @@ import { LoggerService } from '../../common/services/logger.service';
 import { IsString, IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
+export class AdminLoginDto {
+  @ApiProperty({ description: '用户名' })
+  @IsString()
+  @IsNotEmpty()
+  username: string;
+
+  @ApiProperty({ description: '密码' })
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+}
+
 export class WechatLoginDto {
   @ApiProperty({ description: '微信授权码' })
   @IsString()
@@ -37,6 +49,52 @@ export class AuthService {
     private jwtService: JwtService,
     private logger: LoggerService,
   ) {}
+
+  /**
+   * 平台管理员登录
+   */
+  async adminLogin(dto: AdminLoginDto, ip?: string): Promise<LoginResult> {
+    try {
+      // 验证管理员登录凭据
+      if (dto.username !== 'admin' || dto.password !== '123456') {
+        throw new Error('用户名或密码错误');
+      }
+
+      // 平台管理员用户信息
+      const adminUser = {
+        id: 999,
+        openid: 'platform_admin_openid',
+        nickname: '平台管理员',
+        avatar: '',
+        role: 'platform_admin',
+        balance: 0,
+        giftBalance: 0,
+        phone: 'admin',
+      };
+
+      const accessToken = this.jwtService.sign({
+        sub: adminUser.id,
+        phone: 'admin',
+        role: adminUser.role,
+      });
+
+      const refreshToken = this.jwtService.sign({
+        sub: adminUser.id,
+        type: 'refresh',
+      }, { expiresIn: '7d' });
+
+      this.logger.log(`Platform admin login successful from IP: ${ip}`);
+
+      return {
+        accessToken,
+        refreshToken,
+        user: adminUser,
+      };
+    } catch (error) {
+      this.logger.error('Admin login failed', error);
+      throw new Error('登录失败');
+    }
+  }
 
   /**
    * 微信授权登录

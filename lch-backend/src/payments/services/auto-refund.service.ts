@@ -7,7 +7,8 @@ import { OrderStatus, PaymentMethod } from '../../common/interfaces/common.inter
 import { OrdersService } from '../../orders/services/orders.service';
 import { LoggerService } from '../../common/services/logger.service';
 import { NotificationService } from '../../notification/services/notification.service';
-import { NotificationChannel, NotificationType } from '../../notification/interfaces/notification.interface';
+import { NotificationChannel, NotificationType as InterfaceNotificationType } from '../../notification/interfaces/notification.interface';
+import { NotificationType } from '../../notification/entities/notification.entity';
 import { WechatPaymentService } from './wechat-payment.service';
 import { UsersService } from '../../users/services/users.service';
 
@@ -335,22 +336,11 @@ export class AutoRefundService {
 
     // 发送管理员通知
     try {
-      await this.notificationService.sendNotification(
-        {
-          type: NotificationType.ORDER_MANUAL_REVIEW,
-          channel: NotificationChannel.WECHAT_TEMPLATE,
-          recipient: { userId: 1 }, // 发送给管理员，使用正确的recipient格式
-          data: {
-            orderNo: order.order_no,
-            ruleName: rule.name,
-            amount: Number(order.amount),
-            reason: rule.description
-          }
-        },
-        {
-          channels: [NotificationChannel.WECHAT_TEMPLATE],
-          fallback: true
-        }
+      await this.notificationService.sendUserNotification(
+        1, // 管理员用户ID
+        NotificationType.SYSTEM,
+        '人工审核通知',
+        `订单 ${order.order_no} 需要人工审核，规则：${rule.name}`
       );
     } catch (error) {
       this.logger.error(`发送人工审核通知失败: ${error.message}`, error.stack, 'AutoRefundService');
@@ -426,24 +416,11 @@ export class AutoRefundService {
     try {
       const user = await this.usersService.findOne(order.user_id);
       
-      await this.notificationService.sendNotification(
-        {
-          type: NotificationType.REFUND_SUCCESS,
-          channel: NotificationChannel.WECHAT_TEMPLATE,
-          recipient: { 
-            openid: user.wechat_openid,
-            phone: user.phone
-          },
-          data: {
-            orderNo: order.order_no,
-            refundAmount: refundAmount,
-            reason: reason
-          }
-        },
-        {
-          channels: [NotificationChannel.WECHAT_TEMPLATE],
-          fallback: true
-        }
+      await this.notificationService.sendUserNotification(
+        order.user_id,
+        NotificationType.PAYMENT,
+        '退款成功通知',
+        `您的订单 ${order.order_no} 退款成功，金额：${(refundAmount/100).toFixed(2)}元`
       );
     } catch (error) {
       this.logger.error(`发送退款通知失败: ${error.message}`, error.stack, 'AutoRefundService');

@@ -451,16 +451,13 @@ export class DevicesService {
       }
 
       // 发送告警通知
-      await this.notificationService.sendDeviceAlarmNotification(
-        recipients,
+      await this.notificationService.sendDeviceAlertNotification(
+        device.merchant_id,
         {
           deviceName: device.name,
           location: device.location || '未知位置',
           errorMessage,
           alarmType
-        },
-        {
-          priority: 'high'
         }
       );
 

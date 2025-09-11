@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>洗车IOT管理系统 - 服务测试页面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .service-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 5px solid #3498db;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .service-card.backend { border-left-color: #e74c3c; }
+        .service-card.platform { border-left-color: #f39c12; }
+        .service-card.merchant { border-left-color: #27ae60; }
+        .service-card.user { border-left-color: #9b59b6; }
+        
+        .service-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .service-icon {
+            font-size: 2em;
+            margin-right: 15px;
+        }
+        
+        .service-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .service-url {
+            background: #ecf0f1;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: 'Consolas', monospace;
+            color: #34495e;
+            word-break: break-all;
+        }
+        
+        .service-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+        
+        .status-online {
+            background: #27ae60;
+            box-shadow: 0 0 10px rgba(39, 174, 96, 0.5);
+        }
+        
+        .status-checking {
+            background: #f39c12;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .info-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        
+        .info-title {
+            color: #2c3e50;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #3498db;
+            color: white;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            background: #2980b9;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 洗车IOT管理系统</h1>
+            <p>服务测试与快速访问面板</p>
+        </div>
+        
+        <div class="services-grid">
+            <!-- 后端API服务 -->
+            <div class="service-card backend">
+                <div class="service-header">
+                    <div class="service-icon">🔧</div>
+                    <div>
+                        <div class="service-title">后端API服务</div>
+                        <span class="status-indicator status-checking" id="backend-status"></span>
+                    </div>
+                </div>
+                <div class="service-url">http://localhost:5603/api</div>
+                <div class="service-buttons">
+                    <a href="http://localhost:5603/api" target="_blank" class="btn btn-primary">访问API</a>
+                    <a href="http://localhost:5603/api/docs" target="_blank" class="btn btn-secondary">API文档</a>
+                </div>
+            </div>
+            
+            <!-- 平台管理后台 -->
+            <div class="service-card platform">
+                <div class="service-header">
+                    <div class="service-icon">🖥️</div>
+                    <div>
+                        <div class="service-title">平台管理后台</div>
+                        <span class="status-indicator status-checking" id="platform-status"></span>
+                    </div>
+                </div>
+                <div class="service-url">http://localhost:5601</div>
+                <div class="service-buttons">
+                    <a href="http://localhost:5601" target="_blank" class="btn btn-primary">打开平台</a>
+                </div>
+            </div>
+            
+            <!-- 商户管理端 -->
+            <div class="service-card merchant">
+                <div class="service-header">
+                    <div class="service-icon">🏪</div>
+                    <div>
+                        <div class="service-title">商户管理端</div>
+                        <span class="status-indicator status-checking" id="merchant-status"></span>
+                    </div>
+                </div>
+                <div class="service-url">http://localhost:5609</div>
+                <div class="service-buttons">
+                    <a href="http://localhost:5609" target="_blank" class="btn btn-primary">打开商户端</a>
+                </div>
+            </div>
+            
+            <!-- 用户H5端 -->
+            <div class="service-card user">
+                <div class="service-header">
+                    <div class="service-icon">📱</div>
+                    <div>
+                        <div class="service-title">用户H5端</div>
+                        <span class="status-indicator status-checking" id="user-status"></span>
+                    </div>
+                </div>
+                <div class="service-url">http://localhost:5605</div>
+                <div class="service-buttons">
+                    <a href="http://localhost:5605" target="_blank" class="btn btn-primary">打开用户端</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-section">
+            <div class="info-title">🔑 系统信息</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>默认登录账户</strong><br>
+                    用户名: admin<br>
+                    密码: 123456
+                </div>
+                <div class="info-item">
+                    <strong>数据库连接</strong><br>
+                    MySQL: 127.0.0.1:3306<br>
+                    Redis: 127.0.0.1:6379
+                </div>
+                <div class="info-item">
+                    <strong>开发模式</strong><br>
+                    热重载: 已启用<br>
+                    API文档: Swagger UI
+                </div>
+                <div class="info-item">
+                    <strong>系统状态</strong><br>
+                    环境: 本地开发<br>
+                    时间: <span id="current-time"></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>💡 提示: 点击上方按钮可直接访问各个服务，修改代码后服务会自动重载</p>
+            <p>🛠️ 如需停止服务，请在对应的终端窗口按 Ctrl+C</p>
+        </div>
+    </div>
+    
+    <button class="refresh-btn" onclick="location.reload()">🔄</button>
+    
+    <script>
+        // 更新当前时间
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString('zh-CN');
+        }
+        
+        // 检查服务状态
+        async function checkServiceStatus(url, statusId) {
+            try {
+                const response = await fetch(url, { 
+                    method: 'GET',
+                    mode: 'no-cors'
+                });
+                document.getElementById(statusId).className = 'status-indicator status-online';
+            } catch (error) {
+                document.getElementById(statusId).className = 'status-indicator status-checking';
+            }
+        }
+        
+        // 初始化
+        function init() {
+            updateTime();
+            setInterval(updateTime, 1000);
+            
+            // 检查各服务状态
+            setTimeout(() => {
+                checkServiceStatus('http://localhost:5603/api', 'backend-status');
+                checkServiceStatus('http://localhost:5601', 'platform-status');
+                checkServiceStatus('http://localhost:5609', 'merchant-status');
+                checkServiceStatus('http://localhost:5605', 'user-status');
+            }, 1000);
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+        
+        // 定期检查服务状态
+        setInterval(() => {
+            checkServiceStatus('http://localhost:5603/api', 'backend-status');
+            checkServiceStatus('http://localhost:5601', 'platform-status');
+            checkServiceStatus('http://localhost:5609', 'merchant-status');
+            checkServiceStatus('http://localhost:5605', 'user-status');
+        }, 30000);
+    </script>
+</body>
+</html>

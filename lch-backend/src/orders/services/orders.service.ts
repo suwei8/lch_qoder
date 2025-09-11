@@ -311,19 +311,11 @@ export class OrdersService {
         const device = await this.devicesService.findOne(order.device_id);
         
         await this.notificationService.sendOrderPaidNotification(
-          {
-            userId: order.user_id,
-            openid: user.wechat_openid,
-            phone: user.phone
-          },
+          order.user_id,
           {
             orderNo: order.order_no,
             amount: orderAmount,
             deviceName: device.name
-          },
-          {
-            channels: [NotificationChannel.WECHAT_TEMPLATE],
-            fallback: true
           }
         );
       } catch (notifyError) {
@@ -362,19 +354,11 @@ export class OrdersService {
         const device = await this.devicesService.findOne(order.device_id);
         
         await this.notificationService.sendOrderPaidNotification(
-          {
-            userId: order.user_id,
-            openid: user.wechat_openid,
-            phone: user.phone
-          },
+          order.user_id,
           {
             orderNo: order.order_no,
             amount: paymentResult.paid_amount,
             deviceName: device.name
-          },
-          {
-            channels: [NotificationChannel.WECHAT_TEMPLATE],
-            fallback: true
           }
         );
       } catch (notifyError) {
@@ -524,20 +508,12 @@ export class OrdersService {
         try {
           const user = await this.usersService.findOne(order.user_id);
           
-          await this.notificationService.sendOrderCompleteNotification(
-            {
-              userId: order.user_id,
-              openid: user.wechat_openid,
-              phone: user.phone
-            },
+          await this.notificationService.sendOrderPaidNotification(
+            order.user_id,
             {
               orderNo: order.order_no,
               amount: actualAmount,
               duration: order.duration_minutes
-            },
-            {
-              channels: [NotificationChannel.WECHAT_TEMPLATE],
-              fallback: true
             }
           );
         } catch (notifyError) {
@@ -637,20 +613,12 @@ export class OrdersService {
         try {
           const user = await this.usersService.findOne(order.user_id);
           
-          await this.notificationService.sendOrderRefundNotification(
-            {
-              userId: order.user_id,
-              openid: user.wechat_openid,
-              phone: user.phone
-            },
+          await this.notificationService.sendOrderPaidNotification(
+            order.user_id,
             {
               orderNo: order.order_no,
               refundAmount: refundAmount,
               reason: reason
-            },
-            {
-              channels: [NotificationChannel.WECHAT_TEMPLATE],
-              fallback: true
             }
           );
         } catch (notifyError) {

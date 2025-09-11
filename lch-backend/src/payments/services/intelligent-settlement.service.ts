@@ -8,7 +8,7 @@ import { OrderStatus } from '../../common/interfaces/common.interface';
 import { LoggerService } from '../../common/services/logger.service';
 import { MerchantsService } from '../../merchants/services/merchants.service';
 import { NotificationService } from '../../notification/services/notification.service';
-import { NotificationChannel, NotificationType } from '../../notification/interfaces/notification.interface';
+import { NotificationType } from '../../notification/entities/notification.entity';
 
 export interface SettlementRule {
   id: string;
@@ -555,21 +555,11 @@ export class IntelligentSettlementService {
     record: SettlementRecord
   ): Promise<void> {
     try {
-      await this.notificationService.sendNotification(
-        {
-          type: NotificationType.SETTLEMENT_COMPLETED,
-          channel: NotificationChannel.SMS,
-          recipient: { phone: merchant.contact_phone },
-          data: {
-            merchantName: merchant.company_name,
-            period: `${record.startDate.toLocaleDateString()} - ${record.endDate.toLocaleDateString()}`,
-            amount: record.finalAmount
-          }
-        },
-        {
-          channels: [NotificationChannel.SMS],
-          fallback: true
-        }
+      await this.notificationService.sendUserNotification(
+        merchant.id,
+        NotificationType.MERCHANT,
+        '结算完成通知',
+        `您的结算已完成，金额：${(record.finalAmount/100).toFixed(2)}元`
       );
     } catch (error) {
       this.logger.error(`发送结算通知失败: ${error.message}`, error.stack, 'IntelligentSettlementService');

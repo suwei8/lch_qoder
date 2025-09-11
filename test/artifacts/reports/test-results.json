@@ -1,0 +1,106 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\Administrator\\dev_root\\lch_qoder\\test\\playwright.config.ts",
+    "rootDir": "C:/Users/Administrator/dev_root/lch_qoder/test/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "./artifacts/reports/playwright-html"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "./artifacts/reports/test-results.json"
+        }
+      ],
+      [
+        "junit",
+        {
+          "outputFile": "./artifacts/reports/junit.xml"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/Administrator/dev_root/lch_qoder/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "backend-api",
+        "name": "backend-api",
+        "testDir": "C:/Users/Administrator/dev_root/lch_qoder/test/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/Administrator/dev_root/lch_qoder/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "platform-web",
+        "name": "platform-web",
+        "testDir": "C:/Users/Administrator/dev_root/lch_qoder/test/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/Administrator/dev_root/lch_qoder/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "h5-mobile",
+        "name": "h5-mobile",
+        "testDir": "C:/Users/Administrator/dev_root/lch_qoder/test/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.55.0",
+    "workers": 2,
+    "webServer": null
+  },
+  "suites": [],
+  "errors": [
+    {
+      "message": "Error: Process from config.webServer was not able to start. Exit code: 1",
+      "stack": "Error: Process from config.webServer was not able to start. Exit code: 1"
+    }
+  ],
+  "stats": {
+    "startTime": "2025-09-10T02:50:20.996Z",
+    "duration": 58.88299999999981,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

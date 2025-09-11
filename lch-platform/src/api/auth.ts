@@ -2,6 +2,11 @@ import request from '@/utils/request';
 import type { LoginResult, UserInfo } from '@/types/auth';
 
 export const authApi = {
+  // 平台管理员登录
+  adminLogin: (data: { username: string; password: string }): Promise<LoginResult> => {
+    return request.post('/auth/admin/login', data);
+  },
+
   // 微信登录
   wechatLogin: (data: { code: string; userInfo?: any }): Promise<LoginResult> => {
     return request.post('/auth/wechat/login', data);

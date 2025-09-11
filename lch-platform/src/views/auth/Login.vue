@@ -56,7 +56,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
-import { ElMessage, type FormInstance, type FormRules } from 'element-plus';
+import { type FormInstance, type FormRules } from 'element-plus';
 import { useAuthStore } from '@/stores/auth';
 
 const router = useRouter();
@@ -85,34 +85,17 @@ const handleLogin = async () => {
   try {
     await loginFormRef.value.validate();
     
-    // TODO: 实现实际的登录逻辑
-    // 这里暂时模拟登录成功
-    if (loginForm.username === 'admin' && loginForm.password === '123456') {
-      // 模拟登录响应数据
-      const mockLoginData = {
-        accessToken: 'mock-access-token-' + Date.now(),
-        refreshToken: 'mock-refresh-token-' + Date.now(),
-        user: {
-          id: 1,
-          openid: 'platform_admin_openid',
-          nickname: '平台管理员',
-          avatar: '',
-          role: 'platform_admin' as const,
-          balance: 0,
-          giftBalance: 0,
-        },
-      };
-      
-      authStore.setToken(mockLoginData.accessToken, mockLoginData.refreshToken);
-      authStore.setUserInfo(mockLoginData.user);
-      
-      ElMessage.success('登录成功');
-      router.push('/dashboard');
-    } else {
-      ElMessage.error('用户名或密码错误');
-    }
-  } catch (error) {
+    // 调用AuthStore的adminLogin方法
+    await authStore.adminLogin({
+      username: loginForm.username,
+      password: loginForm.password
+    });
+    
+    // 登录成功后跳转
+    router.push('/dashboard');
+  } catch (error: any) {
     console.error('登录失败:', error);
+    // AuthStore已经处理了错误显示
   }
 };
 </script>

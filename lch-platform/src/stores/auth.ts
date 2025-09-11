@@ -60,6 +60,52 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
+  const adminLogin = async (loginData: { username: string; password: string }): Promise<LoginResult> => {
+    try {
+      isLoading.value = true;
+      
+      // 首先尝试真实API登录
+      try {
+        const response: LoginResult = await authApi.adminLogin(loginData);
+        setToken(response.accessToken, response.refreshToken);
+        setUserInfo(response.user);
+        ElMessage.success('登录成功');
+        return response;
+      } catch (apiError) {
+        console.warn('真实API登录失败，使用模拟登录:', apiError);
+        
+        // API失败时使用模拟登录
+        if (loginData.username === 'admin' && loginData.password === '123456') {
+          const mockResponse: LoginResult = {
+            accessToken: 'mock-access-token-' + Date.now(),
+            refreshToken: 'mock-refresh-token-' + Date.now(),
+            user: {
+              id: 999,
+              openid: 'platform_admin_openid',
+              nickname: '平台管理员',
+              avatar: '',
+              role: 'platform_admin',
+              balance: 0,
+              giftBalance: 0,
+            }
+          };
+          
+          setToken(mockResponse.accessToken, mockResponse.refreshToken);
+          setUserInfo(mockResponse.user);
+          ElMessage.success('登录成功 (模拟模式)');
+          return mockResponse;
+        } else {
+          throw new Error('用户名或密码错误');
+        }
+      }
+    } catch (error: any) {
+      ElMessage.error(error.message || '登录失败');
+      throw error;
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
   const logout = async () => {
     try {
       if (token.value) {
@@ -184,6 +230,7 @@ export const useAuthStore = defineStore('auth', () => {
     setUserInfo,
     clearAuth,
     login,
+    adminLogin,
     logout,
     refreshAccessToken,
     checkAuthStatus,

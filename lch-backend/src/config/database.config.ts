@@ -10,7 +10,7 @@ export const databaseConfig: TypeOrmModuleAsyncOptions = {
     password: configService.get<string>('DATABASE_PASSWORD'),
     database: configService.get<string>('DATABASE_NAME', 'lch_v4'),
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-    synchronize: false, // 暂时关闭自动同步，使用手动初始化
+    synchronize: true, // 临时开启自动同步，创建正确的表结构
     logging: configService.get<boolean>('DATABASE_ECHO', false),
     timezone: '+08:00',
     charset: 'utf8mb4',

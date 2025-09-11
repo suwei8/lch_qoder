@@ -7,7 +7,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 // import { HttpExceptionFilter } from './common/filters/http-exception.filter';
-// import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 // import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 async function bootstrap() {
@@ -36,10 +36,10 @@ async function bootstrap() {
   // app.useGlobalFilters(new HttpExceptionFilter());
   
   // 全局拦截器
-  // app.useGlobalInterceptors(
-  //   new LoggingInterceptor(),
-  //   new TransformInterceptor(),
-  // );
+  app.useGlobalInterceptors(
+    // new LoggingInterceptor(),
+    new TransformInterceptor(),
+  );
   
   // Swagger文档配置
   if (process.env.NODE_ENV === 'development') {

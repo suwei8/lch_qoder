@@ -12,12 +12,37 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Request } from 'express';
 import { AuthService, WechatLoginDto, LoginResult } from '../services/auth.service';
+import { IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+
+export class AdminLoginDto {
+  @ApiProperty({ description: '用户名' })
+  @IsString()
+  username: string;
+
+  @ApiProperty({ description: '密码' })
+  @IsString()
+  password: string;
+}
 import { CurrentUser } from '../decorators/current-user.decorator';
 
 @ApiTags('认证')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Post('admin/login')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '平台管理员登录' })
+  @ApiResponse({ status: 200, description: '登录成功' })
+  @ApiResponse({ status: 401, description: '登录失败' })
+  async adminLogin(
+    @Body() dto: AdminLoginDto,
+    @Req() req: Request,
+  ): Promise<LoginResult> {
+    const ip = req.ip || req.connection.remoteAddress;
+    return await this.authService.adminLogin(dto, ip);
+  }
 
   @Post('wechat/login')
   @HttpCode(HttpStatus.OK)
@@ -72,18 +97,19 @@ export class AuthController {
   }
 
   @Get('check')
-  // @UseGuards(AuthGuard('jwt'))
-  // @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
   @ApiOperation({ summary: '检查登录状态' })
   @ApiResponse({ status: 200, description: '已登录' })
-  async checkAuth(/* @CurrentUser() user: any */): Promise<{ valid: boolean; user: any }> {
+  async checkAuth(@CurrentUser() user: any): Promise<{ valid: boolean; user: any }> {
     return {
       valid: true,
       user: {
-        id: 1,
-        openid: 'mock_openid',
-        role: 'user',
-        nickname: '测试用户',
+        id: user.id,
+        openid: user.openid || 'system_openid',
+        role: user.role,
+        nickname: user.nickname || '系统用户',
+        phone: user.phone,
       },
     };
   }

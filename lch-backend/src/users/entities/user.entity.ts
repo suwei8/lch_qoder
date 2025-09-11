@@ -46,6 +46,12 @@ export class User {
   @Column({ nullable: true, length: 200 })
   address: string;
 
+  @Column({ nullable: true, length: 50 })
+  province: string;
+
+  @Column({ nullable: true, length: 50 })
+  city: string;
+
   @Column({ type: 'decimal', precision: 10, scale: 6, nullable: true })
   latitude: number;
 

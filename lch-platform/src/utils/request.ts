@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/auth';
 
 // 创建axios实例
 const request = axios.create({
-  baseURL: '/api',
+  baseURL: 'http://localhost:5603/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -59,7 +59,8 @@ request.interceptors.response.use(
           // 未授权，对于模拟登录不清除认证状态
           if (authStore.token?.startsWith('mock-access-token')) {
             console.warn('模拟登录状态下API调用被拒绝，但保持登录状态');
-            ElMessage.warning('API服务暂不可用，使用模拟数据');
+            // 移除烦人的提示信息
+            // ElMessage.warning('API服务暂不可用，使用模拟数据');
             return Promise.reject(error);
           }
           

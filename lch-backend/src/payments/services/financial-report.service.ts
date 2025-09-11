@@ -8,7 +8,7 @@ import { User } from '../../users/entities/user.entity';
 import { OrderStatus, PaymentMethod } from '../../common/interfaces/common.interface';
 import { LoggerService } from '../../common/services/logger.service';
 import { NotificationService } from '../../notification/services/notification.service';
-import { NotificationChannel, NotificationType } from '../../notification/interfaces/notification.interface';
+import { NotificationType } from '../../notification/entities/notification.entity';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -470,21 +470,11 @@ export class FinancialReportService {
   private async sendReport(reportData: ReportData, template: ReportTemplate): Promise<void> {
     try {
       for (const email of template.recipients.emails) {
-        await this.notificationService.sendNotification(
-          {
-            type: NotificationType.FINANCIAL_REPORT,
-            channel: NotificationChannel.EMAIL,
-            recipient: { email: email },
-            data: {
-              reportName: reportData.reportName,
-              generatedAt: reportData.generatedAt,
-              period: reportData.period
-            }
-          },
-          {
-            channels: [NotificationChannel.EMAIL],
-            fallback: true
-          }
+        await this.notificationService.sendUserNotification(
+          1, // 管理员用户ID
+          NotificationType.SYSTEM,
+          '财务报表通知',
+          `财务报表 ${reportData.reportName} 已生成完成`
         );
       }
 
