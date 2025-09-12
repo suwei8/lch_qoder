@@ -107,6 +107,7 @@ import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus';
 import { useAuthStore } from '@/stores/auth';
+import { authApi } from '@/api/auth';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -169,29 +170,45 @@ const handleLogin = async () => {
     // 检查是否是测试商户手机号
     const testAccount = testAccounts.find(acc => acc.phone === loginForm.phone);
     
-    if (testAccount && loginForm.password === '123456') {
-      // 模拟商户登录响应数据
-      const mockLoginData = {
-        accessToken: 'mock-merchant-token-' + Date.now(),
-        refreshToken: 'mock-merchant-refresh-token-' + Date.now(),
-        user: {
-          id: parseInt(loginForm.phone.slice(-1)) + 1, // 根据手机号生成ID
-          openid: `merchant_openid_${loginForm.phone.slice(-3)}`,
-          nickname: testAccount.name,
-          avatar: '',
-          role: 'merchant_admin' as const,
-          balance: 0,
-          giftBalance: 0,
-        },
-      };
+    // 优先尝试真实API登录
+    try {
+      const response = await authApi.login({
+        phone: loginForm.phone,
+        password: loginForm.password
+      });
       
-      authStore.setToken(mockLoginData.accessToken, mockLoginData.refreshToken);
-      authStore.setUserInfo(mockLoginData.user);
+      // 保存登录信息
+      authStore.setToken(response.access_token, response.refresh_token);
+      authStore.setUserInfo(response.user);
       
-      ElMessage.success(`欢迎 ${testAccount.name} 登录`);
+      ElMessage.success(`欢迎登录平台管理系统`);
       router.push('/merchant/dashboard');
-    } else {
-      ElMessage.error('手机号或密码错误，请使用测试账号登录');
+    } catch (apiError) {
+      // API失败时，检查是否是测试账户
+      if (testAccount && loginForm.password === '123456') {
+        // 使用测试账户数据
+        const mockLoginData = {
+          accessToken: 'mock-merchant-token-' + Date.now(),
+          refreshToken: 'mock-merchant-refresh-token-' + Date.now(),
+          user: {
+            id: parseInt(loginForm.phone.slice(-1)) + 1,
+            openid: `merchant_openid_${loginForm.phone.slice(-3)}`,
+            nickname: testAccount.name,
+            avatar: '',
+            role: 'merchant_admin' as const,
+            balance: 0,
+            giftBalance: 0,
+          },
+        };
+        
+        authStore.setToken(mockLoginData.accessToken, mockLoginData.refreshToken);
+        authStore.setUserInfo(mockLoginData.user);
+        
+        ElMessage.success(`欢迎 ${testAccount.name} 登录（演示模式）`);
+        router.push('/merchant/dashboard');
+      } else {
+        ElMessage.error('手机号或密码错误，请使用测试账号登录');
+      }
     }
   } catch (error) {
     console.error('登录失败:', error);

@@ -490,40 +490,46 @@ const generateMockDevices = (): Device[] => {
 const getDeviceList = async () => {
   loading.value = true;
   
-  // 始终使用模拟数据确保页面正常显示
-  await new Promise(resolve => setTimeout(resolve, 500)); // 模拟加载延迟
-  
-  const mockData = generateMockDevices();
-  const start = (pagination.page - 1) * pagination.limit;
-  const end = start + pagination.limit;
-  deviceList.value = mockData.slice(start, end);
-  pagination.total = mockData.length;
-  
-  loading.value = false;
-  
-  // 后台尝试真实API调用（不阻塞UI）
   try {
-    const params = {
-      ...searchForm,
+    const params: DeviceListParams = {
+      keyword: searchForm.keyword,
+      status: searchForm.status,
       page: pagination.page,
       limit: pagination.limit
     };
+    
     const response = await deviceApi.getDevices(params);
-    // 如果API成功，替换为真实数据
-    deviceList.value = response.data || deviceList.value;
-    pagination.total = response.total || pagination.total;
-    networkStatus.value = 'online'; // 更新网络状态
+    deviceList.value = response.data;
+    pagination.total = response.total;
   } catch (error) {
-    // 遵循API超时错误处理规范，静默处理不显示在控制台
-    // console.warn('设备API调用失败，继续使用模拟数据:', error);
-    networkStatus.value = 'offline'; // 更新网络状态
-  }
+    console.error('获取设备列表失败:', error);
+    ElMessage.error('获取设备列表失败');
+    // API失败时使用模拟数据作为后备
+    const mockData = generateMockDevices();
+    const start = (pagination.page - 1) * pagination.limit;
+    const end = start + pagination.limit;
+    deviceList.value = mockData.slice(start, end);
+    pagination.total = mockData.length;
+  } finally {
+    loading.value = false;
 };
 
 // 获取设备统计
 const getDeviceStats = async () => {
   try {
     const stats = await deviceApi.getDeviceStats();
+    deviceStats.value = {
+      totalDevices: stats.totalDevices,
+      onlineDevices: stats.onlineDevices,
+      workingDevices: stats.workingDevices,
+      errorDevices: stats.errorDevices,
+      offlineDevices: stats.offlineDevices,
+      totalRevenue: stats.totalRevenue,
+      totalUsageMinutes: stats.totalUsageMinutes
+    };
+  } catch (error) {
+    console.error('获取设备统计失败:', error);
+    // 使用默认模拟数据
     deviceStats.value = stats;
     networkStatus.value = 'online'; // 更新网络状态
   } catch (error) {

@@ -225,26 +225,11 @@ const handleQuickDemoLogin = async () => {
     isWechatLoading.value = true
     console.log('开始快速演示登录流程')
     
-    // 模拟登录数据
-    const mockUser = {
-      id: 1001,
-      openid: 'demo-openid-001',
-      nickname: '测试用户',
-      avatar: 'https://avatars.githubusercontent.com/u/1?v=4',
-      phone: '13800138000',
-      balance: 100.00,
-      giftBalance: 50.00,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
+    // 使用预设的测试账号进行真实API登录
+    const testPhone = '13800138000'
+    const testPassword = '123456'
     
-    const mockToken = `mock-access-token-${Date.now()}`
-    console.log('设置用户数据:', mockUser)
-    console.log('设置Token:', mockToken)
-    
-    // 设置用户信息和 token
-    userStore.setToken(mockToken)
-    userStore.setUser(mockUser)
+    await userStore.phonePasswordLogin(testPhone, testPassword)
     
     console.log('用户状态更新完成')
     showSuccessToast('快速演示登录成功')

@@ -288,19 +288,38 @@ const handleRecharge = async () => {
 // 处理微信支付
 const handleWechatPay = async (orderResponse: any) => {
   try {
-    // 模拟微信支付流程
     Toast.loading({
       message: '正在调起微信支付...',
-      forbidClick: true,
-      duration: 2000
+      forbidClick: true
     })
 
-    // 模拟支付成功
-    setTimeout(async () => {
+    // 这里应该调用微信支付SDK或跳转到支付页面
+    // 暂时模拟支付成功，实际项目中需要集成真实的微信支付
+    
+    // 轮询检查订单状态
+    let attempts = 0
+    const maxAttempts = 30 // 最多检查30次，每次间隔2秒
+    
+    const checkPaymentStatus = async (): Promise<boolean> => {
+      try {
+        const statusResult = await rechargeApi.checkOrderStatus(orderResponse.orderId)
+        return statusResult.paid
+      } catch (error) {
+        console.error('检查订单状态失败:', error)
+        return false
+      }
+    }
+
+    // 模拟支付过程
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    const isPaid = await checkPaymentStatus()
+    
+    if (isPaid) {
       Toast.success('充值成功')
       
       // 更新用户余额
-      await userStore.refreshUserInfo()
+      await userStore.fetchUserInfo()
       userBalance.value = userStore.user?.balance || 0
       userGiftBalance.value = userStore.user?.giftBalance || 0
       
@@ -308,10 +327,12 @@ const handleWechatPay = async (orderResponse: any) => {
       selectedPackage.value = null
       isCustomSelected.value = false
       customAmount.value = ''
-    }, 2000)
+    } else {
+      throw new Error('支付未完成')
+    }
   } catch (error) {
     console.error('微信支付失败:', error)
-    Toast.fail('支付失败')
+    Toast.fail('支付失败，请重试')
   }
 }
 
