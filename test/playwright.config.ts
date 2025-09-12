@@ -43,7 +43,7 @@ const getEnvVar = (key: string): string | undefined => {
 const isCI = !!getEnvVar('CI');
 
 const config: PlaywrightConfig = {
-  testDir: './tests/e2e',
+  testDir: './e2e',
   fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 2 : 0,
@@ -99,27 +99,8 @@ const config: PlaywrightConfig = {
     },
   ],
 
-  // Web服务器配置
-  webServer: [
-    {
-      command: 'cd lch-backend && npm run start:dev',
-      port: 5603,
-      reuseExistingServer: !isCI,
-      timeout: 120 * 1000,
-    },
-    {
-      command: 'cd lch-platform && npm run dev -- --port 5601',
-      port: 5601,
-      reuseExistingServer: !isCI,
-      timeout: 120 * 1000,
-    },
-    {
-      command: 'cd lch-user-h5 && npm run dev -- --port 5604',
-      port: 5604,
-      reuseExistingServer: !isCI,
-      timeout: 120 * 1000,
-    },
-  ],
+  // Web服务器配置 - 服务已手动启动，跳过自动启动
+  // webServer: [],
 };
 
 export default config;

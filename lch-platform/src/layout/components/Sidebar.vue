@@ -97,6 +97,14 @@ const handleMenuSelect = (path: string) => {
     &:hover {
       background-color: #1890ff !important;
     }
+    
+    // 确保菜单文字显示
+    span {
+      display: inline-block !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      color: #fff !important;
+    }
   }
   
   .el-menu-item.is-active {
@@ -110,6 +118,19 @@ const handleMenuSelect = (path: string) => {
       bottom: 0;
       width: 3px;
       background: #1890ff;
+    }
+    
+    span {
+      color: #fff !important;
+    }
+  }
+  
+  // 修复折叠状态下的文字显示
+  &:not(.el-menu--collapse) {
+    .el-menu-item span,
+    .el-sub-menu__title span {
+      display: inline-block !important;
+      margin-left: 8px;
     }
   }
 }

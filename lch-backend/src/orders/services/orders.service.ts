@@ -153,7 +153,10 @@ export class OrdersService {
       } = query;
       const offset = (page - 1) * limit;
 
-      const queryBuilder = this.ordersRepository.createQueryBuilder('order');
+      const queryBuilder = this.ordersRepository.createQueryBuilder('order')
+        .leftJoinAndSelect('order.user', 'user')
+        .leftJoinAndSelect('order.device', 'device')
+        .leftJoinAndSelect('order.merchant', 'merchant');
 
       // 关键字搜索
       if (keyword) {
@@ -217,7 +220,8 @@ export class OrdersService {
   async findOne(id: number): Promise<Order> {
     try {
       const order = await this.ordersRepository.findOne({
-        where: { id }
+        where: { id },
+        relations: ['user', 'device', 'merchant']
       });
 
       if (!order) {
@@ -685,7 +689,7 @@ export class OrdersService {
 
         const totalRevenue = await baseQuery.clone()
           .andWhere('order.status = :status', { status: OrderStatus.DONE })
-          .select('SUM(order.total_amount)', 'total')
+          .select('SUM(order.amount)', 'total')
           .getRawOne();
 
         stats = {

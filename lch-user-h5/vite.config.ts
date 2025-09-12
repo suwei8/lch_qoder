@@ -65,11 +65,11 @@ export default defineConfig(({ mode }) => {
     },
   },
   server: {
-    port: 5604,
+    port: 5603,
     host: '0.0.0.0',
     proxy: {
       '/api': {
-        target: 'http://localhost:5603',
+        target: 'http://localhost:5600',
         changeOrigin: true,
       },
     },

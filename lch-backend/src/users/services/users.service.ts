@@ -43,8 +43,10 @@ export class UsersService {
 
   async findAll(query: UserListDto) {
     try {
-      const { keyword, role, status, page = 1, limit = 20 } = query;
-      const offset = (page - 1) * limit;
+      const { keyword, role, status, page = 1, limit = 20, pageSize } = query;
+      // 如果提供了pageSize，使用pageSize，否则使用limit
+      const actualLimit = pageSize || limit;
+      const offset = (page - 1) * actualLimit;
 
       const queryBuilder = this.usersRepository.createQueryBuilder('user');
 
@@ -70,7 +72,7 @@ export class UsersService {
       queryBuilder
         .orderBy('user.created_at', 'DESC')
         .skip(offset)
-        .take(limit);
+        .take(actualLimit);
 
       const [users, total] = await queryBuilder.getManyAndCount();
 
@@ -78,8 +80,8 @@ export class UsersService {
         data: users,
         total,
         page,
-        limit,
-        totalPages: Math.ceil(total / limit)
+        limit: actualLimit,
+        totalPages: Math.ceil(total / actualLimit)
       };
     } catch (error) {
       this.logger.error(`用户列表查询失败: ${error.message}`, error.stack, 'UsersService');

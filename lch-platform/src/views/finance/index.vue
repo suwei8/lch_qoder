@@ -196,6 +196,8 @@ import {
   Search
 } from '@element-plus/icons-vue';
 import { formatTime } from '@/utils/format';
+import { getFinanceStats, getFinanceRecords } from '@/api/finance';
+import type { FinanceStats } from '@/api/finance';
 import WithdrawalAudit from '@/components/WithdrawalAudit.vue';
 import CommissionManager from '@/components/CommissionManager.vue';
 import FinanceReports from '@/components/FinanceReports.vue';
@@ -218,10 +220,10 @@ interface FinanceRecord {
 const activeTab = ref('transactions');
 const loading = ref(false);
 const financeList = ref<FinanceRecord[]>([]);
-const financeStats = ref({
-  totalRevenue: 0,
-  todayRevenue: 0,
-  pendingSettlement: 0,
+const financeStats = ref<FinanceStats>({
+  totalRevenue: '0.00',
+  todayRevenue: '0.00',
+  pendingSettlement: '0.00',
   totalTransactions: 0
 });
 
@@ -240,39 +242,29 @@ const pagination = reactive({
   total: 0
 });
 
-// 模拟数据
-const mockFinanceData = (): FinanceRecord[] => {
-  const types = ['income', 'settlement', 'refund'] as const;
-  const statuses = ['pending', 'completed', 'failed'] as const;
-  const merchants = ['星光洗车店', '阳光汽车美容', '快洁洗车', '蓝天洗车中心', '金辉汽车服务'];
-  
-  return Array.from({ length: 50 }, (_, i) => ({
-    id: 10000 + i,
-    order_id: `ORD${String(Date.now() + i).slice(-8)}`,
-    merchant_name: merchants[i % merchants.length],
-    type: types[i % types.length],
-    amount: Math.floor(Math.random() * 500) + 10,
-    platform_fee: Math.floor(Math.random() * 20) + 1,
-    merchant_amount: Math.floor(Math.random() * 400) + 10,
-    status: statuses[i % statuses.length],
-    created_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
-    remark: i % 3 === 0 ? '正常交易' : undefined
-  }));
-};
+
 
 // 获取财务记录列表
 const getFinanceList = async () => {
   try {
     loading.value = true;
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const mockData = mockFinanceData();
     
-    // 模拟分页
-    const start = (pagination.page - 1) * pagination.limit;
-    const end = start + pagination.limit;
-    financeList.value = mockData.slice(start, end);
-    pagination.total = mockData.length;
+    const params = {
+      page: pagination.page,
+      limit: pagination.limit,
+      type: searchForm.type || undefined,
+      startDate: searchForm.dateRange[0] ? searchForm.dateRange[0].toISOString().split('T')[0] : undefined,
+      endDate: searchForm.dateRange[1] ? searchForm.dateRange[1].toISOString().split('T')[0] : undefined
+    };
+    
+    const response = await getFinanceRecords(params);
+    // 转换日期格式
+    const records = response.records.map(record => ({
+      ...record,
+      created_at: new Date(record.created_at)
+    }));
+    financeList.value = records;
+    pagination.total = response.total;
   } catch (error) {
     console.error('获取财务记录失败:', error);
     ElMessage.error('获取财务记录失败');
@@ -282,18 +274,13 @@ const getFinanceList = async () => {
 };
 
 // 获取财务统计
-const getFinanceStats = async () => {
+const loadFinanceStats = async () => {
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 300));
-    financeStats.value = {
-      totalRevenue: 125680.50,
-      todayRevenue: 3420.80,
-      pendingSettlement: 15680.20,
-      totalTransactions: 1256
-    };
+    const response = await getFinanceStats();
+    financeStats.value = response;
   } catch (error) {
     console.error('获取财务统计失败:', error);
+    ElMessage.error('获取财务统计失败');
   }
 };
 
@@ -371,7 +358,7 @@ const handleViewDetail = (row: FinanceRecord) => {
 // 初始化
 onMounted(() => {
   getFinanceList();
-  getFinanceStats();
+  loadFinanceStats();
 });
 </script>
 

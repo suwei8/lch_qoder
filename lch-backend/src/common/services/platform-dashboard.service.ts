@@ -143,7 +143,8 @@ export class PlatformDashboardService {
         const [
           processingOrders,
           workingDevices,
-          hourlyRevenue
+          hourlyRevenue,
+          activeUsers
         ] = await Promise.all([
           this.ordersRepository.count({
             where: { status: OrderStatus.IN_USE }
@@ -156,11 +157,12 @@ export class PlatformDashboardService {
             .select('COALESCE(SUM(order.paid_amount), 0)', 'total')
             .where('order.created_at >= :start', { start: hourAgo })
             .andWhere('order.status != :status', { status: OrderStatus.CANCELLED })
-            .getRawOne()
+            .getRawOne(),
+          // 获取真实的活跃用户数（状态为active的用户）
+          this.usersRepository.count({
+            where: { status: UserStatus.ACTIVE }
+          })
         ]);
-
-        // 模拟在线用户数（可以根据实际会话数据计算）
-        const activeUsers = Math.floor(Math.random() * 30) + 40;
 
         data = {
           activeUsers,

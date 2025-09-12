@@ -44,6 +44,10 @@ export class CreateUserDto {
 
 export class UpdateUserDto {
   @IsOptional()
+  @IsPhoneNumber('CN')
+  phone?: string;
+
+  @IsOptional()
   @IsString()
   nickname?: string;
 
@@ -58,6 +62,11 @@ export class UpdateUserDto {
   @IsOptional()
   @IsEnum(UserStatus)
   status?: UserStatus;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  balance?: number;
 
   @IsOptional()
   @IsString()
@@ -99,4 +108,10 @@ export class UserListDto {
   @Min(1)
   @Max(100)
   limit?: number = 20;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(100)
+  pageSize?: number = 20;
 }

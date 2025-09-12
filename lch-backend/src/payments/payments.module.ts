@@ -11,6 +11,7 @@ import { WechatPaymentController } from './controllers/wechat-payment.controller
 import { AutoRefundController } from './controllers/auto-refund.controller';
 import { SettlementController } from './controllers/settlement.controller';
 import { FinancialReportController } from './controllers/financial-report.controller';
+import { FinanceController } from './controllers/finance.controller';
 import { CommonModule } from '../common/common.module';
 import { OrdersModule } from '../orders/orders.module';
 import { UsersModule } from '../users/users.module';
@@ -34,7 +35,8 @@ import { User } from '../users/entities/user.entity';
     WechatPaymentController, 
     AutoRefundController, 
     SettlementController,
-    FinancialReportController
+    FinancialReportController,
+    FinanceController
   ],
   providers: [
     PaymentsService, 

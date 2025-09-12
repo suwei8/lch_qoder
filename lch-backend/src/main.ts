@@ -1,5 +1,7 @@
 // 加载环境变量
 import * as dotenv from 'dotenv';
+// 优先加载 .env.local，然后是 .env
+dotenv.config({ path: '.env.local' });
 dotenv.config();
 
 import { NestFactory } from '@nestjs/core';
@@ -54,7 +56,7 @@ async function bootstrap() {
     SwaggerModule.setup('api/docs', app, document);
   }
   
-  const port = process.env.PORT || 5603;
+  const port = process.env.PORT || 5600;
   await app.listen(port);
   
   console.log(`🚀 亮车惠自助洗车系统启动成功！`);

@@ -1,7 +1,7 @@
 {
   "config": {
-    "configFile": "C:\\Users\\Administrator\\dev_root\\lch_qoder\\test\\playwright.config.ts",
-    "rootDir": "C:/Users/Administrator/dev_root/lch_qoder/test/tests/e2e",
+    "configFile": "D:\\dev_root\\lch_qoder\\test\\playwright.config.ts",
+    "rootDir": "D:/dev_root/lch_qoder/test/e2e",
     "forbidOnly": false,
     "fullyParallel": true,
     "globalSetup": null,
@@ -39,13 +39,13 @@
     "quiet": false,
     "projects": [
       {
-        "outputDir": "C:/Users/Administrator/dev_root/lch_qoder/test-results",
+        "outputDir": "D:/dev_root/lch_qoder/test/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {},
         "id": "backend-api",
         "name": "backend-api",
-        "testDir": "C:/Users/Administrator/dev_root/lch_qoder/test/tests/e2e",
+        "testDir": "D:/dev_root/lch_qoder/test/e2e",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -53,13 +53,13 @@
         "timeout": 30000
       },
       {
-        "outputDir": "C:/Users/Administrator/dev_root/lch_qoder/test-results",
+        "outputDir": "D:/dev_root/lch_qoder/test/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {},
         "id": "platform-web",
         "name": "platform-web",
-        "testDir": "C:/Users/Administrator/dev_root/lch_qoder/test/tests/e2e",
+        "testDir": "D:/dev_root/lch_qoder/test/e2e",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -67,13 +67,13 @@
         "timeout": 30000
       },
       {
-        "outputDir": "C:/Users/Administrator/dev_root/lch_qoder/test-results",
+        "outputDir": "D:/dev_root/lch_qoder/test/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {},
         "id": "h5-mobile",
         "name": "h5-mobile",
-        "testDir": "C:/Users/Administrator/dev_root/lch_qoder/test/tests/e2e",
+        "testDir": "D:/dev_root/lch_qoder/test/e2e",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -96,8 +96,8 @@
     }
   ],
   "stats": {
-    "startTime": "2025-09-10T02:50:20.996Z",
-    "duration": 58.88299999999981,
+    "startTime": "2025-09-11T08:47:23.214Z",
+    "duration": 54.067999999999984,
     "expected": 0,
     "skipped": 0,
     "unexpected": 0,

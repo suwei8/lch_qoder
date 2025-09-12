@@ -168,6 +168,102 @@
         />
       </div>
     </div>
+
+    <!-- 用户编辑/新增对话框 -->
+    <el-dialog
+      v-model="showCreateDialog"
+      :title="editingUser ? '编辑用户' : '新增用户'"
+      width="600px"
+      @close="handleDialogClose"
+    >
+      <el-form
+        ref="userFormRef"
+        :model="userForm"
+        :rules="userFormRules"
+        label-width="100px"
+      >
+        <el-form-item label="手机号" prop="phone">
+          <el-input
+            v-model="userForm.phone"
+            placeholder="请输入手机号"
+            :disabled="!!editingUser"
+          />
+        </el-form-item>
+        <el-form-item label="昵称" prop="nickname">
+          <el-input
+            v-model="userForm.nickname"
+            placeholder="请输入昵称"
+          />
+        </el-form-item>
+        <el-form-item label="角色" prop="role">
+          <el-select v-model="userForm.role" placeholder="请选择角色">
+            <el-option label="管理员" value="platform_admin" />
+            <el-option label="商户" value="merchant" />
+            <el-option label="普通用户" value="user" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-select v-model="userForm.status" placeholder="请选择状态">
+            <el-option label="正常" value="active" />
+            <el-option label="禁用" value="inactive" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="余额" prop="balance">
+          <el-input-number
+            v-model="userForm.balance"
+            :min="0"
+            :precision="2"
+            placeholder="请输入余额"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="地址" prop="address">
+          <el-input
+            v-model="userForm.address"
+            placeholder="请输入地址"
+            type="textarea"
+            :rows="3"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="showCreateDialog = false">取消</el-button>
+          <el-button type="primary" :loading="saving" @click="handleSaveUser">
+            {{ editingUser ? '更新' : '创建' }}
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 用户详情对话框 -->
+    <el-dialog
+      v-model="showDetailDialog"
+      title="用户详情"
+      width="600px"
+    >
+      <div v-if="selectedUser" class="user-detail">
+        <el-descriptions :column="2" border>
+          <el-descriptions-item label="ID">{{ selectedUser.id }}</el-descriptions-item>
+          <el-descriptions-item label="手机号">{{ selectedUser.phone }}</el-descriptions-item>
+          <el-descriptions-item label="昵称">{{ selectedUser.nickname }}</el-descriptions-item>
+          <el-descriptions-item label="角色">
+            <el-tag :type="getRoleType(selectedUser.role)">{{ getRoleText(selectedUser.role) }}</el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="状态">
+            <el-tag :type="selectedUser.status === 'active' ? 'success' : 'danger'">
+              {{ selectedUser.status === 'active' ? '正常' : '禁用' }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="余额">¥{{ (selectedUser.balance / 100).toFixed(2) }}</el-descriptions-item>
+          <el-descriptions-item label="地址" :span="2">{{ selectedUser.address || '未填写' }}</el-descriptions-item>
+          <el-descriptions-item label="最后登录">
+            {{ selectedUser.last_login_at ? formatDate(selectedUser.last_login_at) : '从未登录' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="注册时间">{{ formatDate(selectedUser.created_at) }}</el-descriptions-item>
+        </el-descriptions>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -194,6 +290,35 @@ const showCreateDialog = ref(false);
 const showDetailDialog = ref(false);
 const editingUser = ref<UserType | null>(null);
 const selectedUser = ref<UserType | null>(null);
+const userFormRef = ref();
+
+// 用户表单数据
+const userForm = reactive({
+  phone: '',
+  nickname: '',
+  role: 'user',
+  status: 'active',
+  balance: 0,
+  address: ''
+});
+
+// 表单验证规则
+const userFormRules = reactive({
+  phone: [
+    { required: true, message: '请输入手机号', trigger: 'blur' },
+    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }
+  ],
+  nickname: [
+    { required: true, message: '请输入昵称', trigger: 'blur' },
+    { min: 2, max: 20, message: '昵称长度在 2 到 20 个字符', trigger: 'blur' }
+  ],
+  role: [
+    { required: true, message: '请选择角色', trigger: 'change' }
+  ],
+  status: [
+    { required: true, message: '请选择状态', trigger: 'change' }
+  ]
+});
 
 // 用户统计数据
 const userStats = ref({
@@ -219,74 +344,44 @@ const pagination = reactive({
   total: 0,
 });
 
-// 生成模拟用户数据
-const generateMockUsers = (): UserType[] => {
-  const roles = ['user', 'merchant', 'admin'] as const;
-  const statuses = ['active', 'inactive'] as const;
-  const names = ['张三', '李四', '王五', '赵六', '钱七', '孙八', '周九', '吴十'];
-  
-  return Array.from({ length: 50 }, (_, i) => ({
-    id: i + 1,
-    phone: `138${String(i).padStart(8, '0')}`,
-    nickname: `${names[i % names.length]}${i + 1}`,
-    avatar: '',
-    role: roles[i % roles.length],
-    status: statuses[i % statuses.length],
-    balance: Math.floor(Math.random() * 50000), // 分为单位
-    address: `北京市朝阳区测试地址${i + 1}号`,
-    last_login_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
-    created_at: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
-    updated_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
-  }));
-};
-
 // 加载用户列表
 const loadUsers = async () => {
   loading.value = true;
   
-  // 始终使用模拟数据确保页面正常显示
-  await new Promise(resolve => setTimeout(resolve, 500)); // 模拟加载延迟
-  
-  const mockData = generateMockUsers();
-  const start = (pagination.page - 1) * pagination.pageSize;
-  const end = start + pagination.pageSize;
-  users.value = mockData.slice(start, end);
-  pagination.total = mockData.length;
-  
-  loading.value = false;
-  
-  // 后台尝试真实API调用（不阻塞UI）
   try {
     const params = {
       ...searchForm,
       page: pagination.page,
-      limit: pagination.pageSize,
+      pageSize: pagination.pageSize,
     };
     const response = await userApi.getUsers(params);
-    // 如果API成功，替换为真实数据
-    users.value = response.data || users.value;
-    pagination.total = response.total || pagination.total;
+    users.value = response.data || [];
+    pagination.total = response.total || 0;
   } catch (error) {
-    console.warn('API调用失败，继续使用模拟数据:', error);
+    console.error('用户列表加载失败:', error);
+    ElMessage.error('用户列表加载失败');
+    users.value = [];
+    pagination.total = 0;
+  } finally {
+    loading.value = false;
   }
 };
 
 // 加载用户统计数据
 const loadUserStats = async () => {
-  // 使用模拟数据，确保统计卡片正常显示
-  userStats.value = {
-    totalUsers: 156,
-    activeUsers: 145,
-    merchantUsers: 23,
-    todayNewUsers: 5
-  };
-  
-  // 后台尝试真实API调用
   try {
     const stats = await userApi.getUserStats();
     userStats.value = stats;
   } catch (error) {
-    console.warn('用户统计API调用失败，使用模拟数据:', error);
+    console.error('用户统计加载失败:', error);
+    ElMessage.error('用户统计加载失败');
+    // 设置默认值
+    userStats.value = {
+      totalUsers: 0,
+      activeUsers: 0,
+      merchantUsers: 0,
+      todayNewUsers: 0
+    };
   }
 };
 
@@ -310,7 +405,62 @@ const viewUser = (user: UserType) => {
 // 编辑用户
 const editUser = (user: UserType) => {
   editingUser.value = user;
+  // 填充表单数据
+  Object.assign(userForm, {
+    phone: user.phone,
+    nickname: user.nickname,
+    role: user.role,
+    status: user.status,
+    balance: user.balance / 100, // 转换为元
+    address: user.address || ''
+  });
   showCreateDialog.value = true;
+};
+
+// 处理对话框关闭
+const handleDialogClose = () => {
+  editingUser.value = null;
+  // 重置表单
+  Object.assign(userForm, {
+    phone: '',
+    nickname: '',
+    role: 'user',
+    status: 'active',
+    balance: 0,
+    address: ''
+  });
+  userFormRef.value?.resetFields();
+};
+
+// 保存用户
+const handleSaveUser = async () => {
+  try {
+    await userFormRef.value?.validate();
+    saving.value = true;
+
+    const userData = {
+      ...userForm,
+      balance: Math.round(userForm.balance * 100) // 转换为分
+    };
+
+    if (editingUser.value) {
+      // 更新用户
+      await userApi.updateUser(editingUser.value.id, userData);
+      ElMessage.success('用户更新成功');
+    } else {
+      // 创建用户
+      await userApi.createUser(userData);
+      ElMessage.success('用户创建成功');
+    }
+
+    showCreateDialog.value = false;
+    loadUsers();
+  } catch (error) {
+    console.error('保存用户失败:', error);
+    ElMessage.error(editingUser.value ? '用户更新失败' : '用户创建失败');
+  } finally {
+    saving.value = false;
+  }
 };
 
 // 切换用户状态

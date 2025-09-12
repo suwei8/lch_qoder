@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { UserRole, UserStatus } from '../../common/interfaces/common.interface';
-// import { Order } from '../../orders/entities/order.entity';
+import { Order } from '../../orders/entities/order.entity';
 
 
 @Entity('users')
@@ -71,8 +71,8 @@ export class User {
   updated_at: Date;
 
   // 关联关系
-  // @OneToMany(() => Order, order => order.user)
-  // orders: Order[];
+  @OneToMany(() => Order, order => order.user)
+  orders: Order[];
 
   // 计算属性
   get isActive(): boolean {
