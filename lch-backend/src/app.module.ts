@@ -17,6 +17,7 @@ import { CouponsModule } from './coupons/coupons.module';
 import { MarketingModule } from './marketing/marketing.module';
 import { PerformanceModule } from './performance/performance.module';
 import { CommonModule } from './common/common.module';
+import { StoresModule } from './stores/stores.module';
 import { databaseConfig } from './config/database.config';
 // import { redisConfig } from './config/redis.config';
 

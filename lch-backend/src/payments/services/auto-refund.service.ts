@@ -336,12 +336,11 @@ export class AutoRefundService {
 
     // 发送管理员通知
     try {
-      await this.notificationService.sendUserNotification(
-        1, // 管理员用户ID
-        NotificationType.SYSTEM,
-        '人工审核通知',
-        `订单 ${order.order_no} 需要人工审核，规则：${rule.name}`
-      );
+      await this.notificationService.sendUserNotification(1, {
+        title: '人工审核通知',
+        content: `订单 ${order.order_no} 需要人工审核，规则：${rule.name}`,
+        type: 'system'
+      });
     } catch (error) {
       this.logger.error(`发送人工审核通知失败: ${error.message}`, error.stack, 'AutoRefundService');
     }
@@ -416,12 +415,11 @@ export class AutoRefundService {
     try {
       const user = await this.usersService.findOne(order.user_id);
       
-      await this.notificationService.sendUserNotification(
-        order.user_id,
-        NotificationType.PAYMENT,
-        '退款成功通知',
-        `您的订单 ${order.order_no} 退款成功，金额：${(refundAmount/100).toFixed(2)}元`
-      );
+      await this.notificationService.sendUserNotification(order.user_id, {
+        title: '退款成功通知',
+        content: `您的订单 ${order.order_no} 退款成功，金额：${(refundAmount/100).toFixed(2)}元`,
+        type: 'order_refunded'
+      });
     } catch (error) {
       this.logger.error(`发送退款通知失败: ${error.message}`, error.stack, 'AutoRefundService');
     }

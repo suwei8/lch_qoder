@@ -112,6 +112,7 @@ import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus';
 import { useAuthStore } from '@/stores/auth';
+import { authApi } from '@/api';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -182,7 +183,7 @@ const handleLogin = async () => {
       });
       
       // 保存登录信息
-      authStore.setToken(response.access_token, response.refresh_token);
+      authStore.setToken(response.accessToken, response.refreshToken);
       authStore.setUserInfo(response.user);
       
       ElMessage.success(`欢迎登录商户管理中心`);

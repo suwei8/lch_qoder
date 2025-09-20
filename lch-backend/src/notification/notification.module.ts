@@ -7,11 +7,12 @@ import { WechatTemplateService } from './services/wechat-template.service';
 import { SmsService } from './services/sms.service';
 import { NotificationController } from './controllers/notification.controller';
 import { Notification } from './entities/notification.entity';
+import { User } from '../users/entities/user.entity';
 import { CommonModule } from '../common/common.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Notification]),
+    TypeOrmModule.forFeature([Notification, User]),
     HttpModule.register({
       timeout: 10000,
       maxRedirects: 3,

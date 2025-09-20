@@ -165,6 +165,55 @@ export class AuthService {
   }
 
   /**
+   * 手机号密码登录
+   */
+  async phonePasswordLogin(dto: { phone: string; password: string }, ip?: string): Promise<LoginResult> {
+    try {
+      // 模拟手机密码登录逻辑
+      // 这里简化处理，实际应该查询数据库验证用户
+      if (dto.password !== '123456') {
+        throw new Error('密码错误');
+      }
+
+      const mockUser = {
+        id: 1,
+        openid: 'phone_user_' + dto.phone,
+        nickname: `用户${dto.phone.slice(-4)}`,
+        avatar: 'https://example.com/default-avatar.jpg',
+        phone: dto.phone,
+        role: 'user',
+        balance: 100.00,
+        giftBalance: 50.00,
+      };
+
+      // 生成 JWT token
+      const payload = { 
+        sub: mockUser.id, 
+        openid: mockUser.openid,
+        phone: mockUser.phone,
+        role: mockUser.role 
+      };
+      
+      const accessToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+      const refreshToken = this.jwtService.sign(payload, { expiresIn: '30d' });
+
+      // 记录登录日志
+      if (ip) {
+        this.logger.log(`用户 ${mockUser.nickname} (${dto.phone}) 从 ${ip} 登录`);
+      }
+
+      return {
+        accessToken,
+        refreshToken,
+        user: mockUser,
+      };
+    } catch (error) {
+      this.logger.error('手机密码登录失败', error);
+      throw new Error('手机密码登录失败');
+    }
+  }
+
+  /**
    * 用户登出
    */
   async logout(userId: number): Promise<void> {

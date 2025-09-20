@@ -470,12 +470,11 @@ export class FinancialReportService {
   private async sendReport(reportData: ReportData, template: ReportTemplate): Promise<void> {
     try {
       for (const email of template.recipients.emails) {
-        await this.notificationService.sendUserNotification(
-          1, // 管理员用户ID
-          NotificationType.SYSTEM,
-          '财务报表通知',
-          `财务报表 ${reportData.reportName} 已生成完成`
-        );
+        await this.notificationService.sendUserNotification(1, {
+          title: '财务报表通知',
+          content: `财务报表 ${reportData.reportName} 已生成完成`,
+          type: 'system'
+        });
       }
 
       this.logger.log(`报表发送完成: ${template.name}`, 'FinancialReportService');

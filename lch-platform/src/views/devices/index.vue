@@ -512,6 +512,7 @@ const getDeviceList = async () => {
     pagination.total = mockData.length;
   } finally {
     loading.value = false;
+  }
 };
 
 // 获取设备统计
@@ -527,10 +528,6 @@ const getDeviceStats = async () => {
       totalRevenue: stats.totalRevenue,
       totalUsageMinutes: stats.totalUsageMinutes
     };
-  } catch (error) {
-    console.error('获取设备统计失败:', error);
-    // 使用默认模拟数据
-    deviceStats.value = stats;
     networkStatus.value = 'online'; // 更新网络状态
   } catch (error) {
     // 遵循API超时错误处理规范，静默处理不显示在控制台

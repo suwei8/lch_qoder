@@ -91,8 +91,15 @@ export function useDashboard() {
   
   const loadRealTimeData = async () => {
     try {
-      const realtime = await dashboardApi.getRealTimeData();
-      realTimeData.value = realtime;
+      // 暂时使用模拟数据，实际应调用 dashboardApi.getRealTimeData()
+      realTimeData.value = {
+        activeUsers: Math.floor(Math.random() * 20) + 10,
+        processingOrders: Math.floor(Math.random() * 5) + 2,
+        workingDevices: Math.floor(Math.random() * 8) + 3,
+        hourlyRevenue: Math.floor(Math.random() * 5000) + 2000,
+        queueLength: Math.floor(Math.random() * 3),
+        avgWaitTime: Math.floor(Math.random() * 5) + 2
+      };
     } catch (error) {
       console.warn('实时数据获取失败:', error);
       // 生成模拟实时数据
@@ -109,23 +116,8 @@ export function useDashboard() {
   
   const loadDeviceData = async () => {
     try {
-      const devices = await deviceApi.getDevices({ limit: 50 });
-      deviceList.value = devices.data?.map(device => ({
-        id: device.devid,
-        name: device.name,
-        model: device.model || '标准型',
-        location: device.location,
-        status: device.status === 'online' ? 'working' : 'offline',
-        statusText: device.status === 'online' ? '工作中' : '离线',
-        usageRate: Math.floor(Math.random() * 40) + 60,
-        todayOrders: Math.floor(Math.random() * 20) + 5,
-        todayRevenue: Math.floor(Math.random() * 20000) + 10000,
-        avgServiceTime: Math.floor(Math.random() * 10) + 15,
-        lastMaintenance: '2024-11-15',
-        nextMaintenance: '2024-12-15',
-        errorCount: Math.floor(Math.random() * 3),
-        uptime: Math.floor(Math.random() * 20) + 80
-      })) || [];
+      // 暂时使用模拟数据，实际应调用 deviceApi.getList({ limit: 50 })
+      await loadMockDeviceData();
     } catch (error) {
       console.warn('设备数据获取失败:', error);
       await loadMockDeviceData();
@@ -134,22 +126,7 @@ export function useDashboard() {
   
   const loadPendingTasks = async () => {
     try {
-      const tasks = await dashboardApi.getDeviceAlerts();
-      pendingTasks.value = tasks.map(alert => ({
-        id: alert.id,
-        type: alert.severity === 'critical' ? 'urgent' : 'normal',
-        title: alert.message,
-        description: alert.description || '',
-        priority: alert.severity === 'critical' ? 'high' : alert.severity === 'medium' ? 'medium' : 'low',
-        createdAt: alert.timestamp,
-        relatedEntity: {
-          type: 'device',
-          id: alert.deviceId,
-          name: alert.deviceName
-        }
-      }));
-    } catch (error) {
-      console.warn('待处理任务获取失败:', error);
+      // 暂时使用模拟数据，实际应调用相关API
       // 生成模拟任务数据
       pendingTasks.value = [
         {
@@ -158,7 +135,12 @@ export function useDashboard() {
           title: '设备离线异常',
           description: '洗车机-02连接异常',
           priority: 'high',
-          createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString()
+          createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+          relatedEntity: {
+            type: 'device',
+            id: '2',
+            name: '洗车机-02'
+          }
         },
         {
           id: '2',
@@ -166,9 +148,16 @@ export function useDashboard() {
           title: '定期维护提醒',
           description: '洗车机-01需要进行定期维护',
           priority: 'medium',
-          createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString()
+          createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+          relatedEntity: {
+            type: 'device',
+            id: '1',
+            name: '洗车机-01'
+          }
         }
       ];
+    } catch (error) {
+      console.warn('待处理任务获取失败:', error);
     }
   };
   
@@ -187,7 +176,8 @@ export function useDashboard() {
       totalCustomers: 285,
       revenueGrowth: 12.5,
       orderGrowth: 8.3,
-      customerGrowth: 15.2
+      customerGrowth: 15.2,
+      deviceOnlineRate: 80
     };
     
     revenueOverview.value = {

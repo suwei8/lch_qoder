@@ -287,4 +287,30 @@ export class UsersService {
       throw error;
     }
   }
+
+  /**
+   * 增加用户余额 (OrdersService需要)
+   */
+  async addBalance(userId: number, amount: number, reason: string): Promise<void> {
+    try {
+      const user = await this.usersRepository.findOne({ where: { id: userId } });
+      if (!user) {
+        throw new NotFoundException('用户不存在');
+      }
+
+      // 更新用户余额
+      const newBalance = (user.balance || 0) + amount;
+      await this.usersRepository.update(userId, {
+        balance: newBalance
+      });
+
+      // 清除用户缓存
+      await this.cacheService.del(`user:${userId}`);
+
+      this.logger.log(`用户余额增加成功: 用户${userId}, 金额${amount}, 原因: ${reason}`, 'UsersService');
+    } catch (error) {
+      this.logger.error(`用户余额增加失败: 用户${userId}, ${error.message}`, error.stack, 'UsersService');
+      throw error;
+    }
+  }
 }

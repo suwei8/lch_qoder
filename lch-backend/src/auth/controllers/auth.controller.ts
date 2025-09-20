@@ -24,6 +24,16 @@ export class AdminLoginDto {
   @IsString()
   password: string;
 }
+
+export class PhonePasswordLoginDto {
+  @ApiProperty({ description: '手机号' })
+  @IsString()
+  phone: string;
+
+  @ApiProperty({ description: '密码' })
+  @IsString()
+  password: string;
+}
 import { CurrentUser } from '../decorators/current-user.decorator';
 
 @ApiTags('认证')
@@ -55,6 +65,19 @@ export class AuthController {
   ): Promise<LoginResult> {
     const ip = req.ip || req.connection.remoteAddress;
     return await this.authService.wechatLogin(dto, ip);
+  }
+
+  @Post('phone/password-login')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '手机号密码登录' })
+  @ApiResponse({ status: 200, description: '登录成功' })
+  @ApiResponse({ status: 401, description: '登录失败' })
+  async phonePasswordLogin(
+    @Body() dto: PhonePasswordLoginDto,
+    @Req() req: Request,
+  ): Promise<LoginResult> {
+    const ip = req.ip || req.connection.remoteAddress;
+    return await this.authService.phonePasswordLogin(dto, ip);
   }
 
   @Post('refresh')

@@ -1,17 +1,17 @@
 /*
  Navicat Premium Data Transfer
 
- Source Server         : 11
+ Source Server         : localhost_3306
  Source Server Type    : MySQL
- Source Server Version : 80029 (8.0.29)
+ Source Server Version : 80035 (8.0.35)
  Source Host           : localhost:3306
  Source Schema         : lch_v4
 
  Target Server Type    : MySQL
- Target Server Version : 80029 (8.0.29)
+ Target Server Version : 80035 (8.0.35)
  File Encoding         : 65001
 
- Date: 11/09/2025 13:01:37
+ Date: 21/09/2025 02:58:05
 */
 
 SET NAMES utf8mb4;
@@ -41,7 +41,7 @@ CREATE TABLE `balance_ledger`  (
   INDEX `idx_order`(`order_id` ASC) USING BTREE,
   INDEX `idx_created_at`(`created_at` ASC) USING BTREE,
   CONSTRAINT `balance_ledger_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '余额流水表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '余额流水表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of balance_ledger
@@ -56,6 +56,40 @@ INSERT INTO `balance_ledger` VALUES (7, 5, 'gift', 200.00, 'gift_balance', 0.00,
 INSERT INTO `balance_ledger` VALUES (8, 6, 'recharge', 200.00, 'balance', 0.00, 200.00, NULL, 'wechat', NULL, '微信充值', 'success', '2025-09-11 01:06:21.459448', '2025-09-11 01:06:21.459448');
 INSERT INTO `balance_ledger` VALUES (9, 7, 'recharge', 150.00, 'balance', 450.00, 600.00, NULL, 'wechat', NULL, '微信充值', 'success', '2025-09-11 01:06:21.459448', '2025-09-11 01:06:21.459448');
 INSERT INTO `balance_ledger` VALUES (10, 7, 'gift', 150.00, 'gift_balance', 0.00, 150.00, NULL, 'system', NULL, '充值赠送', 'success', '2025-09-11 01:06:21.459448', '2025-09-11 01:06:21.459448');
+
+-- ----------------------------
+-- Table structure for balance_transactions
+-- ----------------------------
+DROP TABLE IF EXISTS `balance_transactions`;
+CREATE TABLE `balance_transactions`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL COMMENT '用户ID',
+  `type` enum('recharge','consumption','refund','gift','withdraw') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '交易类型',
+  `amount` int NOT NULL COMMENT '交易金额(分)',
+  `balance_used` int NOT NULL DEFAULT 0 COMMENT '使用普通余额(分)',
+  `gift_balance_used` int NOT NULL DEFAULT 0 COMMENT '使用赠送余额(分)',
+  `balance_before` int NOT NULL COMMENT '交易前余额(分)',
+  `balance_after` int NOT NULL COMMENT '交易后余额(分)',
+  `gift_balance_before` int NOT NULL COMMENT '交易前赠送余额(分)',
+  `gift_balance_after` int NOT NULL COMMENT '交易后赠送余额(分)',
+  `status` enum('pending','success','failed') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'success' COMMENT '交易状态',
+  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '交易描述',
+  `order_id` int NULL DEFAULT NULL COMMENT '关联订单ID',
+  `external_transaction_id` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '外部交易号',
+  `created_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `FK_cc289b49c758d4d35644a6e1804`(`user_id` ASC) USING BTREE,
+  CONSTRAINT `FK_cc289b49c758d4d35644a6e1804` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of balance_transactions
+-- ----------------------------
+INSERT INTO `balance_transactions` VALUES (1, 1, 'recharge', 5000, 0, 0, 0, 5000, 0, 0, 'success', '微信充值', NULL, NULL, '2025-09-10 15:37:01.991000');
+INSERT INTO `balance_transactions` VALUES (2, 1, 'gift', 1000, 0, 0, 5000, 5000, 0, 1000, 'success', '首次充值赠送', NULL, NULL, '2025-09-10 15:38:01.991000');
+INSERT INTO `balance_transactions` VALUES (3, 1, 'consumption', 1500, 1500, 0, 5000, 4500, 1000, 500, 'success', '洗车消费 - 标准洗车', NULL, NULL, '2025-09-12 15:37:01.991000');
+INSERT INTO `balance_transactions` VALUES (4, 1, 'recharge', 2000, 0, 0, 4500, 6500, 500, 500, 'success', '支付宝充值', NULL, NULL, '2025-09-14 15:37:01.991000');
+INSERT INTO `balance_transactions` VALUES (5, 1, 'consumption', 2800, 2800, 0, 6500, 4200, 500, 0, 'success', '洗车消费 - 精洗套餐', NULL, NULL, '2025-09-16 15:37:01.991000');
 
 -- ----------------------------
 -- Table structure for coupons
@@ -77,7 +111,7 @@ CREATE TABLE `coupons`  (
   `created_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
   `updated_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of coupons
@@ -120,7 +154,7 @@ CREATE TABLE `devices`  (
   UNIQUE INDEX `IDX_e7772d9ad3d3bb68241908747b`(`devid` ASC) USING BTREE,
   INDEX `FK_117df55aa42197dcad6c8cf5192`(`merchant_id` ASC) USING BTREE,
   CONSTRAINT `FK_117df55aa42197dcad6c8cf5192` FOREIGN KEY (`merchant_id`) REFERENCES `merchants` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 7 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of devices
@@ -167,7 +201,7 @@ CREATE TABLE `merchants`  (
   UNIQUE INDEX `IDX_31c2da633a6fac3b71cca753b8`(`business_license` ASC) USING BTREE,
   UNIQUE INDEX `REL_698f612a3134c503f711479a4e`(`user_id` ASC) USING BTREE,
   CONSTRAINT `FK_698f612a3134c503f711479a4e5` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of merchants
@@ -197,7 +231,7 @@ CREATE TABLE `notifications`  (
   `created_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) COMMENT '创建时间',
   `updated_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 12 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of notifications
@@ -213,6 +247,7 @@ INSERT INTO `notifications` VALUES (8, 6, 'order', '订单支付成功', '您的
 INSERT INTO `notifications` VALUES (9, 7, 'promotion', '周末特惠来袭', '周末洗车享8折优惠，优惠券限时发放！', NULL, 0, 0, 'normal', 'page', '/promotions', '2025-09-14 01:06:54', NULL, '2025-09-11 01:06:54.101734', '2025-09-11 01:06:54.101734');
 INSERT INTO `notifications` VALUES (10, 8, 'system', '账户安全提醒', '检测到您的账户在新设备登录，如非本人操作请及时修改密码。', NULL, 0, 0, 'urgent', 'page', '/profile/security', NULL, NULL, '2025-09-11 01:06:54.101734', '2025-09-11 01:06:54.101734');
 INSERT INTO `notifications` VALUES (11, 1, 'system', '财务报表通知', '财务报表 每日财务汇总_2025-09-11 已生成完成', NULL, 0, 0, 'normal', 'none', NULL, NULL, '2025-09-11 08:00:00', '2025-09-11 08:00:00.486177', '2025-09-11 08:00:00.486177');
+INSERT INTO `notifications` VALUES (12, 1, 'system', '人工审核通知', '订单 LCH202409110003 需要人工审核，规则：结算超时退款', NULL, 0, 0, 'normal', 'none', NULL, NULL, '2025-09-11 15:11:00', '2025-09-11 07:11:00.126290', '2025-09-11 07:11:00.126290');
 
 -- ----------------------------
 -- Table structure for orders
@@ -253,14 +288,14 @@ CREATE TABLE `orders`  (
   CONSTRAINT `FK_0d5053c55d04be4001b17b39589` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `FK_2474866c8f8e9196ff227a7cbbd` FOREIGN KEY (`merchant_id`) REFERENCES `merchants` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `FK_a922b820eeef29ac1c6800e826a` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 27 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 27 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of orders
 -- ----------------------------
 INSERT INTO `orders` VALUES (1, 'LCH202409110001', 3, 1, 1, 'DONE', 900, 900, 0, 'wechat', 0, 0, 0, NULL, NULL, NULL, NULL, '2025-09-10 23:05:52', '2025-09-10 23:05:52', '2025-09-11 00:05:52', 15, NULL, NULL, NULL, '2025-09-11 01:05:52.157867', '2025-09-11 01:05:52.157867');
 INSERT INTO `orders` VALUES (2, 'LCH202409110002', 4, 1, 2, 'DONE', 1200, 1200, 0, 'balance', 1000, 200, 0, NULL, NULL, NULL, NULL, '2025-09-10 21:05:52', '2025-09-10 21:05:52', '2025-09-10 22:05:52', 20, NULL, NULL, NULL, '2025-09-11 01:05:52.157867', '2025-09-11 01:05:52.157867');
-INSERT INTO `orders` VALUES (3, 'LCH202409110003', 5, 1, 3, 'SETTLING', 1500, 1500, 0, 'wechat', 0, 0, 0, NULL, NULL, NULL, NULL, '2025-09-11 00:35:52', '2025-09-11 00:35:52', '2025-09-11 02:37:00', 121, NULL, '结算超时，需要人工核查。最后更新时间: Thu Sep 11 2025 11:14:00 GMT+0800 (中国标准时间)', NULL, '2025-09-11 01:05:52.157867', '2025-09-11 11:15:00.000000');
+INSERT INTO `orders` VALUES (3, 'LCH202409110003', 5, 1, 3, 'CLOSED', 1500, 1500, 0, 'wechat', 0, 0, 0, NULL, NULL, NULL, NULL, '2025-09-11 00:35:52', '2025-09-11 00:35:52', '2025-09-11 02:37:00', 121, NULL, '需要人工审核退款: 订单结算超时，需要人工审核', NULL, '2025-09-11 01:05:52.157867', '2025-09-11 07:11:00.000000');
 INSERT INTO `orders` VALUES (4, 'LCH202409110004', 6, 2, 4, 'DONE', 840, 840, 0, 'mixed', 500, 100, 0, NULL, NULL, NULL, NULL, '2025-09-10 19:05:52', '2025-09-10 19:05:52', '2025-09-10 20:05:52', 18, NULL, NULL, NULL, '2025-09-11 01:05:52.157867', '2025-09-11 01:05:52.157867');
 INSERT INTO `orders` VALUES (5, 'LCH202409110005', 7, 2, 4, 'PAID', 1120, 1120, 0, 'wechat', 0, 0, 0, NULL, NULL, NULL, NULL, '2025-09-11 00:05:52', NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-11 01:05:52.157867', '2025-09-11 01:05:52.157867');
 INSERT INTO `orders` VALUES (6, 'LCH202409100001', 8, 1, 1, 'DONE', 600, 600, 0, 'balance', 600, 0, 0, NULL, NULL, NULL, NULL, '2025-09-10 01:05:52', '2025-09-10 01:05:52', '2025-09-10 01:05:52', 12, NULL, NULL, NULL, '2025-09-11 01:05:52.157867', '2025-09-11 01:05:52.157867');
@@ -296,7 +331,7 @@ CREATE TABLE `settlement_records`  (
   INDEX `idx_batch`(`settlement_batch` ASC) USING BTREE,
   INDEX `idx_status`(`status` ASC) USING BTREE,
   CONSTRAINT `settlement_records_ibfk_1` FOREIGN KEY (`merchant_id`) REFERENCES `merchants` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '结算记录表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '结算记录表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of settlement_records
@@ -324,7 +359,7 @@ CREATE TABLE `system_configs`  (
   `updated_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6) COMMENT '更新时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `IDX_8430d4ebdc1faef3d3eeef36e8`(`config_key` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of system_configs
@@ -362,7 +397,7 @@ CREATE TABLE `user_coupons`  (
   INDEX `FK_8051e26a8b74e9b53696cb9625d`(`coupon_id` ASC) USING BTREE,
   CONSTRAINT `FK_4765af200afa62c263bcc9a9541` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `FK_8051e26a8b74e9b53696cb9625d` FOREIGN KEY (`coupon_id`) REFERENCES `coupons` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of user_coupons
@@ -404,15 +439,15 @@ CREATE TABLE `users`  (
   `city` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `IDX_a000cca60bcf04454e72769949`(`phone` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of users
 -- ----------------------------
-INSERT INTO `users` VALUES (1, '13800138001', '系统管理员', NULL, NULL, NULL, 'platform_admin', 'active', 0.00, 0.00, '北京市朝阳区建国门外大街1号', 39.904200, 116.407400, NULL, NULL, '2025-09-11 01:05:11.930412', '2025-09-11 01:05:11.930412', '北京市', '朝阳区');
+INSERT INTO `users` VALUES (1, '13800138001', '系统管理员', NULL, NULL, NULL, 'platform_admin', 'active', 935.00, 1711.00, '北京市朝阳区建国门外大街1号', 39.904200, 116.407400, NULL, NULL, '2025-09-11 01:05:11.930412', '2025-09-17 07:37:02.000000', '北京市', '朝阳区');
 INSERT INTO `users` VALUES (2, '13900139001', '商户老板', NULL, NULL, NULL, 'merchant', 'active', 0.00, 0.00, '上海市浦东新区陆家嘴环路1000号', 31.239700, 121.499300, NULL, NULL, '2025-09-11 01:05:11.930412', '2025-09-11 01:05:11.930412', '上海市', '浦东新区');
-INSERT INTO `users` VALUES (3, '13700137001', '张三', NULL, NULL, NULL, 'user', 'active', 500.00, 100.00, '上海市黄浦区南京东路300号', 31.230700, 121.470400, NULL, NULL, '2025-09-11 01:05:11.930412', '2025-09-11 01:05:11.930412', '上海市', '黄浦区');
-INSERT INTO `users` VALUES (4, '13600136001', '李四', NULL, NULL, NULL, 'user', 'active', 300.00, 50.00, '深圳市南山区科技园', 22.543100, 114.057900, NULL, NULL, '2025-09-11 01:05:11.930412', '2025-09-11 01:05:11.930412', '广东省', '深圳市');
+INSERT INTO `users` VALUES (3, '13700137001', '张三1', NULL, NULL, NULL, 'user', 'active', 500.00, 100.00, '上海市黄浦区南京东路300号', 31.230700, 121.470400, NULL, NULL, '2025-09-11 01:05:11.930412', '2025-09-12 07:04:47.000000', '上海市', '黄浦区');
+INSERT INTO `users` VALUES (4, '13600136001', '李四', NULL, NULL, NULL, 'user', 'active', 500.00, 50.00, '深圳市南山区科技园1', 22.543100, 114.057900, NULL, NULL, '2025-09-11 01:05:11.930412', '2025-09-12 07:05:09.000000', '广东省', '深圳市');
 INSERT INTO `users` VALUES (5, '13500135001', '王五', NULL, NULL, NULL, 'user', 'active', 800.00, 200.00, '杭州市西湖区文一西路969号', 30.274100, 120.155100, NULL, NULL, '2025-09-11 01:05:11.930412', '2025-09-11 01:05:11.930412', '浙江省', '杭州市');
 INSERT INTO `users` VALUES (6, '13400134001', '赵六', NULL, NULL, NULL, 'user', 'active', 200.00, 0.00, '南京市鼓楼区中山路1号', 32.060300, 118.796900, NULL, NULL, '2025-09-11 01:05:11.930412', '2025-09-11 01:05:11.930412', '江苏省', '南京市');
 INSERT INTO `users` VALUES (7, '13300133001', '孙七', NULL, NULL, NULL, 'user', 'active', 600.00, 150.00, '成都市锦江区天府大道1号', 30.659800, 104.063300, NULL, NULL, '2025-09-11 01:05:11.930412', '2025-09-11 01:05:11.930412', '四川省', '成都市');

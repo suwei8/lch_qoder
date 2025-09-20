@@ -12,10 +12,11 @@ export enum PaymentChannel {
 }
 
 export interface WechatPaymentParams {
-  orderId: number;
+  orderId: string;
   amount: number;
-  description: string;
+  description?: string;
   openid?: string;
+  clientIp?: string;
 }
 
 export interface PaymentResult {
@@ -24,4 +25,22 @@ export interface PaymentResult {
   transactionId?: string;
   prepayId?: string;
   errorMessage?: string;
+  // JSAPI支付参数
+  jsapiParams?: {
+    appId: string;
+    timeStamp: string;
+    nonceStr: string;
+    package: string;
+    signType: string;
+    paySign: string;
+  };
+  // H5支付链接
+  h5Url?: string;
+  // 支付状态
+  tradeState?: string;
+  paidAmount?: number;
+  paidAt?: string;
+  // 退款相关
+  refundId?: string;
+  refundStatus?: string;
 }

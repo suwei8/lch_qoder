@@ -45,11 +45,11 @@ export class NotificationController {
       priority?: NotificationPriority;
     }
   ) {
-    return this.notificationService.sendSystemNotification(
-      body.title,
-      body.content,
-      body.priority
-    );
+    return this.notificationService.sendSystemNotification({
+      title: body.title,
+      content: body.content,
+      priority: body.priority
+    });
   }
 
   // 发送用户通知
@@ -63,19 +63,18 @@ export class NotificationController {
       extraData?: any;
     }
   ) {
-    return this.notificationService.sendUserNotification(
-      body.userId,
-      body.type,
-      body.title,
-      body.content,
-      body.extraData
-    );
+    return this.notificationService.sendUserNotification(body.userId, {
+      title: body.title,
+      content: body.content,
+      type: 'system',
+      data: body.extraData
+    });
   }
 
   // 标记为已读
   @Patch(':id/read')
-  markAsRead(@Param('id') id: string) {
-    return this.notificationService.markAsRead(+id);
+  markAsRead(@Param('id') id: string, @Body() body: { userId: number }) {
+    return this.notificationService.markAsRead(+id, body.userId);
   }
 
   // 批量标记已读

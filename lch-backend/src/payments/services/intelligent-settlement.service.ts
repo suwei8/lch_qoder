@@ -555,12 +555,11 @@ export class IntelligentSettlementService {
     record: SettlementRecord
   ): Promise<void> {
     try {
-      await this.notificationService.sendUserNotification(
-        merchant.id,
-        NotificationType.MERCHANT,
-        '结算完成通知',
-        `您的结算已完成，金额：${(record.finalAmount/100).toFixed(2)}元`
-      );
+      await this.notificationService.sendUserNotification(merchant.id, {
+        title: '结算完成通知',
+        content: `您的结算已完成，金额：${(record.finalAmount/100).toFixed(2)}元`,
+        type: 'system'
+      });
     } catch (error) {
       this.logger.error(`发送结算通知失败: ${error.message}`, error.stack, 'IntelligentSettlementService');
     }

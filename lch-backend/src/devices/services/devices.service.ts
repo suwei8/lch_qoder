@@ -452,13 +452,9 @@ export class DevicesService {
 
       // 发送告警通知
       await this.notificationService.sendDeviceAlertNotification(
-        device.merchant_id,
-        {
-          deviceName: device.name,
-          location: device.location || '未知位置',
-          errorMessage,
-          alarmType
-        }
+        device.id,
+        alarmType,
+        `设备 ${device.name} (${device.location || '未知位置'}) 发生告警: ${errorMessage}`
       );
 
       this.logger.log(
@@ -586,6 +582,32 @@ export class DevicesService {
       return devices;
     } catch (error) {
       this.logger.error(`查询附近设备失败: ${error.message}`, error.stack, 'DevicesService');
+      throw error;
+    }
+  }
+
+  /**
+   * 释放设备 (OrdersService需要)
+   */
+  async releaseDevice(deviceId: number): Promise<void> {
+    try {
+      const device = await this.devicesRepository.findOne({ where: { id: deviceId } });
+      if (!device) {
+        throw new NotFoundException('设备不存在');
+      }
+
+      // 更新设备状态为在线可用
+      await this.devicesRepository.update(deviceId, {
+        status: DeviceStatus.ONLINE
+      });
+
+      // 清除缓存
+      await this.cacheService.del(`device:${deviceId}`);
+      await this.cacheService.del('devices:list:*');
+
+      this.logger.log(`设备释放成功: ${deviceId}`, 'DevicesService');
+    } catch (error) {
+      this.logger.error(`设备释放失败: ${deviceId}, ${error.message}`, error.stack, 'DevicesService');
       throw error;
     }
   }

@@ -4,6 +4,7 @@ import { MerchantsService } from './services/merchants.service';
 import { DashboardService } from './services/dashboard.service';
 import { MerchantsController } from './controllers/merchants.controller';
 import { MerchantDashboardController } from './controllers/dashboard.controller';
+import { StoresController } from './controllers/stores.controller';
 import { Merchant } from './entities/merchant.entity';
 import { Order } from '../orders/entities/order.entity';
 import { Device } from '../devices/entities/device.entity';
@@ -17,7 +18,7 @@ import { UsersModule } from '../users/users.module';
     CommonModule,
     UsersModule
   ],
-  controllers: [MerchantsController, MerchantDashboardController],
+  controllers: [MerchantsController, MerchantDashboardController, StoresController],
   providers: [MerchantsService, DashboardService],
   exports: [MerchantsService, DashboardService]
 })

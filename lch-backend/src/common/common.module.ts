@@ -7,6 +7,10 @@ import { PlatformDashboardService } from './services/platform-dashboard.service'
 import { SystemConfigService } from './services/system-config.service';
 import { PlatformDashboardController } from './controllers/platform-dashboard.controller';
 import { SystemConfigController } from './controllers/system-config.controller';
+import { SystemTestController } from './controllers/system-test.controller';
+import { SystemTestService } from './services/system-test.service';
+import { ExportService } from './services/export.service';
+import { ExportController } from './controllers/export.controller';
 import { User } from '../users/entities/user.entity';
 import { Merchant } from '../merchants/entities/merchant.entity';
 import { Device } from '../devices/entities/device.entity';
@@ -21,6 +25,8 @@ import { SystemConfig } from './entities/system-config.entity';
   controllers: [
     PlatformDashboardController,
     SystemConfigController,
+    SystemTestController,
+    ExportController,
   ],
   providers: [
     LoggerService,
@@ -28,6 +34,8 @@ import { SystemConfig } from './entities/system-config.entity';
     CacheService,
     PlatformDashboardService,
     SystemConfigService,
+    SystemTestService,
+    ExportService,
   ],
   exports: [
     LoggerService,
@@ -35,6 +43,8 @@ import { SystemConfig } from './entities/system-config.entity';
     CacheService,
     PlatformDashboardService,
     SystemConfigService,
+    SystemTestService,
+    ExportService,
   ],
 })
 export class CommonModule {}

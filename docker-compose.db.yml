@@ -1,6 +1,6 @@
 services:
   mysql:
-    image: mysql:8.0
+    image: mysql:8.0.35
     container_name: lch-mysql
     ports:
       - "3306:3306" 
@@ -16,7 +16,7 @@ services:
     restart: unless-stopped
 
   redis:
-    image: redis:6.0
+    image: redis:7.2
     container_name: lch-redis
     ports:
       - "6379:6379"  

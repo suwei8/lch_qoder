@@ -248,6 +248,119 @@ export class MerchantsService {
     }
   }
 
+  async reject(id: number, reason: string, rejectedBy: number): Promise<Merchant> {
+    try {
+      const merchant = await this.findOne(id);
+
+      if (merchant.status !== MerchantStatus.PENDING) {
+        throw new BadRequestException('只能拒绝待审核状态的商户');
+      }
+
+      merchant.status = MerchantStatus.REJECTED;
+      merchant.reject_reason = reason;
+
+      const updatedMerchant = await this.merchantsRepository.save(merchant);
+
+      // 清除缓存
+      await this.cacheService.del(`merchant:${id}`);
+      await this.cacheService.del('merchants:list:*');
+
+      this.logger.log(`商户申请拒绝: ${id}, 原因: ${reason}`, 'MerchantsService');
+      return updatedMerchant;
+    } catch (error) {
+      this.logger.error(`商户申请拒绝失败: ${error.message}`, error.stack, 'MerchantsService');
+      throw error;
+    }
+  }
+
+  async suspend(id: number, suspendedBy: number): Promise<Merchant> {
+    try {
+      const merchant = await this.findOne(id);
+
+      if (merchant.status === MerchantStatus.SUSPENDED) {
+        throw new BadRequestException('商户已经是暂停状态');
+      }
+
+      merchant.status = MerchantStatus.SUSPENDED;
+      const updatedMerchant = await this.merchantsRepository.save(merchant);
+
+      // 清除缓存
+      await this.cacheService.del(`merchant:${id}`);
+      await this.cacheService.del('merchants:list:*');
+
+      this.logger.log(`商户暂停: ${id}`, 'MerchantsService');
+      return updatedMerchant;
+    } catch (error) {
+      this.logger.error(`商户暂停失败: ${error.message}`, error.stack, 'MerchantsService');
+      throw error;
+    }
+  }
+
+  async getBusinessData(id: number) {
+    try {
+      const merchant = await this.findOne(id);
+      
+      // 这里需要根据实际的设备和订单关联来获取数据
+      // 暂时返回模拟数据，后续需要实现真实的统计逻辑
+      const businessData = {
+        deviceCount: 0,
+        orderCount: 0,
+        revenueData: []
+      };
+
+      return { data: businessData };
+    } catch (error) {
+      this.logger.error(`获取商户经营数据失败: ${error.message}`, error.stack, 'MerchantsService');
+      throw error;
+    }
+  }
+
+  async getAuditHistory(id: number) {
+    try {
+      // 这里需要实现审核历史记录功能
+      // 暂时返回空数据，后续需要创建审核历史表
+      const auditHistory = [];
+
+      return { data: auditHistory };
+    } catch (error) {
+      this.logger.error(`获取审核历史失败: ${error.message}`, error.stack, 'MerchantsService');
+      throw error;
+    }
+  }
+
+  async getAuditStats() {
+    try {
+      const [pending, approved, rejected, suspended] = await Promise.all([
+        this.merchantsRepository.count({ where: { status: MerchantStatus.PENDING } }),
+        this.merchantsRepository.count({ where: { status: MerchantStatus.APPROVED } }),
+        this.merchantsRepository.count({ where: { status: MerchantStatus.REJECTED } }),
+        this.merchantsRepository.count({ where: { status: MerchantStatus.SUSPENDED } })
+      ]);
+
+      return {
+        pending,
+        approved,
+        rejected,
+        suspended
+      };
+    } catch (error) {
+      this.logger.error(`获取审核统计失败: ${error.message}`, error.stack, 'MerchantsService');
+      throw error;
+    }
+  }
+
+  async exportMerchants(filters: any) {
+    try {
+      // 这里需要实现导出功能
+      // 暂时返回成功响应，后续需要实现Excel导出
+      this.logger.log('商户数据导出请求', 'MerchantsService');
+      return { message: '导出功能开发中' };
+    } catch (error) {
+      this.logger.error(`商户数据导出失败: ${error.message}`, error.stack, 'MerchantsService');
+      throw error;
+    }
+  }
+
   async getStats() {
     try {
       const cacheKey = 'merchants:stats';
@@ -285,8 +398,8 @@ export class MerchantsService {
           approvedMerchants,
           pendingMerchants,
           todayNewMerchants,
-          totalRevenue: Number(totalRevenue?.total || 0),
-          pendingSettlement: Number(pendingSettlement?.total || 0)
+          totalRevenue: Number(totalRevenue?.total || 0) * 100, // 转换为分
+          pendingSettlement: Number(pendingSettlement?.total || 0) * 100 // 转换为分
         };
 
         // 缓存10分钟

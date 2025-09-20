@@ -4,11 +4,11 @@ import type {
   DashboardStats,
   RevenueOverview,
   DeviceOverview,
-  OrderStats,
   RecentActivity,
   SystemStatus,
   DeviceAlert
 } from '@/types/dashboard';
+import type { OrderStats } from '@/types/order';
 
 export const dashboardApi = {
   // 获取仪表盘概览统计

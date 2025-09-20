@@ -12,7 +12,7 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { OrdersService } from '../services/orders.service';
 import { CreateOrderDto, UpdateOrderDto, PaymentResultDto, OrderListDto } from '../dto/order.dto';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
@@ -29,7 +29,7 @@ export class OrdersController {
   ) {}
 
   @Post()
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: '创建订单' })
   @ApiResponse({ status: 201, description: '订单创建成功' })
@@ -40,7 +40,7 @@ export class OrdersController {
   }
 
   @Get()
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: '获取订单列表' })
   @ApiResponse({ status: 200, description: '订单列表获取成功' })
@@ -59,7 +59,7 @@ export class OrdersController {
   }
 
   @Get('stats')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: '获取订单统计信息' })
   @ApiResponse({ status: 200, description: '订单统计获取成功' })
@@ -78,7 +78,7 @@ export class OrdersController {
   }
 
   @Get(':id')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: '获取指定订单信息' })
   @ApiResponse({ status: 200, description: '订单信息获取成功' })
@@ -87,7 +87,7 @@ export class OrdersController {
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.PLATFORM_ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: '更新订单信息' })
@@ -97,7 +97,7 @@ export class OrdersController {
   }
 
   @Post(':id/start')
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.PLATFORM_ADMIN, UserRole.MERCHANT)
   @ApiBearerAuth()
   @ApiOperation({ summary: '启动设备' })
@@ -107,7 +107,7 @@ export class OrdersController {
   }
 
   @Post(':id/finish')
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.PLATFORM_ADMIN, UserRole.MERCHANT)
   @ApiBearerAuth()
   @ApiOperation({ summary: '完成订单' })
@@ -120,7 +120,7 @@ export class OrdersController {
   }
 
   @Post(':id/cancel')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: '取消订单' })
   @ApiResponse({ status: 200, description: '订单取消成功' })
@@ -132,7 +132,7 @@ export class OrdersController {
   }
 
   @Post(':id/refund')
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.PLATFORM_ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: '订单退款' })

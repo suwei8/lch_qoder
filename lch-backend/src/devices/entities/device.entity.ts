@@ -88,8 +88,8 @@ export class Device {
   @JoinColumn({ name: 'merchant_id' })
   merchant: any;
 
-  // @OneToMany(() => Order, order => order.device)
-  // orders: Order[];
+  @OneToMany(() => require('../../orders/entities/order.entity').Order, (order: any) => order.device)
+  orders: any[];
 
   // 业务方法
   /**

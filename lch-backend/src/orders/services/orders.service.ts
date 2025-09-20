@@ -25,6 +25,151 @@ export class OrdersService {
     private cacheService: CacheService,
   ) {}
 
+  /**
+   * 取消订单
+   */
+  async cancelOrder(orderId: number, cancelData: {
+    reason: string;
+    operator_id?: number;
+    operator_type: 'user' | 'admin' | 'system';
+  }): Promise<Order> {
+    try {
+      const order = await this.ordersRepository.findOne({
+        where: { id: orderId },
+        relations: ['user', 'device', 'merchant']
+      });
+
+      if (!order) {
+        throw new NotFoundException('订单不存在');
+      }
+
+      // 检查订单状态是否可以取消
+      const cancellableStatuses = [
+        OrderStatus.INIT,
+        OrderStatus.PAY_PENDING,
+        OrderStatus.PAID
+      ];
+
+      if (!cancellableStatuses.includes(order.status)) {
+        throw new BadRequestException(`订单状态为${order.status}，无法取消`);
+      }
+
+      // 如果已支付，需要退款
+      if (order.status === OrderStatus.PAID && order.paid_amount > 0) {
+        await this.refundOrder(orderId, {
+          reason: `订单取消退款: ${cancelData.reason}`,
+          operator_id: cancelData.operator_id,
+          operator_type: cancelData.operator_type
+        });
+      }
+
+      // 更新订单状态
+      await this.ordersRepository.update(orderId, {
+        status: OrderStatus.CANCELLED,
+        remark: cancelData.reason,
+        updated_at: new Date()
+      });
+
+      // 释放设备
+      if (order.device_id) {
+        await this.devicesService.releaseDevice(order.device_id);
+      }
+
+      const updatedOrder = await this.ordersRepository.findOne({
+        where: { id: orderId },
+        relations: ['user', 'device', 'merchant']
+      });
+
+      this.logger.log(`订单取消成功: ${order.order_no}, 操作者: ${cancelData.operator_type}`);
+      
+      return updatedOrder;
+    } catch (error) {
+      this.logger.error(`取消订单失败: ${orderId}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 退款订单
+   */
+  async refundOrder(orderId: number, refundData: {
+    reason: string;
+    amount?: number; // 退款金额，不传则全额退款
+    operator_id?: number;
+    operator_type: 'user' | 'admin' | 'system';
+  }): Promise<Order> {
+    try {
+      const order = await this.ordersRepository.findOne({
+        where: { id: orderId },
+        relations: ['user', 'device', 'merchant']
+      });
+
+      if (!order) {
+        throw new NotFoundException('订单不存在');
+      }
+
+      // 检查订单是否可以退款
+      if (order.paid_amount <= 0) {
+        throw new BadRequestException('订单未支付，无法退款');
+      }
+
+      if (order.refund_amount >= order.paid_amount) {
+        throw new BadRequestException('订单已全额退款');
+      }
+
+      // 计算退款金额
+      const maxRefundAmount = order.paid_amount - order.refund_amount;
+      const refundAmount = refundData.amount ? 
+        Math.min(refundData.amount, maxRefundAmount) : maxRefundAmount;
+
+      if (refundAmount <= 0) {
+        throw new BadRequestException('退款金额必须大于0');
+      }
+
+      // 根据支付方式处理退款
+      if (order.payment_method === PaymentMethod.WECHAT) {
+        // 微信退款 - 这里需要调用微信退款API
+        this.logger.log(`微信退款: 订单${order.order_no}, 金额${refundAmount}分`);
+        // TODO: 调用微信退款API
+      } else if (order.payment_method === PaymentMethod.BALANCE) {
+        // 余额退款 - 直接退回用户余额
+        await this.usersService.addBalance(order.user_id, refundAmount, `订单退款: ${order.order_no}`);
+      }
+
+      // 更新订单退款信息
+      await this.ordersRepository.update(orderId, {
+        refund_amount: order.refund_amount + refundAmount,
+        status: refundAmount >= maxRefundAmount ? OrderStatus.CANCELLED : order.status,
+        remark: `${order.remark || ''} | 退款: ${refundData.reason}`,
+        updated_at: new Date()
+      });
+
+      const updatedOrder = await this.ordersRepository.findOne({
+        where: { id: orderId },
+        relations: ['user', 'device', 'merchant']
+      });
+
+      this.logger.log(`订单退款成功: ${order.order_no}, 退款金额: ${refundAmount}分`);
+      
+      return updatedOrder;
+    } catch (error) {
+      this.logger.error(`订单退款失败: ${orderId}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 部分退款
+   */
+  async partialRefund(orderId: number, refundData: {
+    reason: string;
+    amount: number;
+    operator_id?: number;
+    operator_type: 'user' | 'admin' | 'system';
+  }): Promise<Order> {
+    return this.refundOrder(orderId, refundData);
+  }
+
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
     try {
       // 1. 获取设备信息并验证
@@ -316,11 +461,8 @@ export class OrdersService {
         
         await this.notificationService.sendOrderPaidNotification(
           order.user_id,
-          {
-            orderNo: order.order_no,
-            amount: orderAmount,
-            deviceName: device.name
-          }
+          order.id,
+          orderAmount
         );
       } catch (notifyError) {
         this.logger.error(`发送支付通知失败: ${notifyError.message}`, notifyError.stack, 'OrdersService');
@@ -359,11 +501,8 @@ export class OrdersService {
         
         await this.notificationService.sendOrderPaidNotification(
           order.user_id,
-          {
-            orderNo: order.order_no,
-            amount: paymentResult.paid_amount,
-            deviceName: device.name
-          }
+          order.id,
+          paymentResult.paid_amount
         );
       } catch (notifyError) {
         this.logger.error(`发送支付通知失败: ${notifyError.message}`, notifyError.stack, 'OrdersService');
@@ -514,11 +653,8 @@ export class OrdersService {
           
           await this.notificationService.sendOrderPaidNotification(
             order.user_id,
-            {
-              orderNo: order.order_no,
-              amount: actualAmount,
-              duration: order.duration_minutes
-            }
+            order.id,
+            actualAmount
           );
         } catch (notifyError) {
           this.logger.error(`发送订单完成通知失败: ${notifyError.message}`, notifyError.stack, 'OrdersService');
@@ -619,11 +755,8 @@ export class OrdersService {
           
           await this.notificationService.sendOrderPaidNotification(
             order.user_id,
-            {
-              orderNo: order.order_no,
-              refundAmount: refundAmount,
-              reason: reason
-            }
+            order.id,
+            refundAmount
           );
         } catch (notifyError) {
           this.logger.error(`发送退款通知失败: ${notifyError.message}`, notifyError.stack, 'OrdersService');

@@ -589,12 +589,11 @@ export class VipMembershipService {
    */
   private async sendUpgradeNotification(user: User, newLevel: VipLevel, config: VipLevelConfig): Promise<void> {
     try {
-      await this.notificationService.sendUserNotification(
-        user.id,
-        NotificationType.PROMOTION,
-        'VIP升级通知',
-        `恭喜您成功升级为VIP金卡会员！`
-      );
+      await this.notificationService.sendUserNotification(user.id, {
+        title: 'VIP升级通知',
+        content: `恭喜您成功升级为VIP金卡会员！`,
+        type: 'marketing'
+      });
     } catch (error) {
       this.logger.error(`发送升级通知失败: ${error.message}`, error.stack, 'VipMembershipService');
     }

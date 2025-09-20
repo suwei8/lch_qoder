@@ -16,7 +16,9 @@ export interface UserInfo {
 
 // 登录请求
 export interface LoginRequest {
-  code: string;
+  code?: string;
+  phone?: string;
+  password?: string;
   userInfo?: any;
 }
 

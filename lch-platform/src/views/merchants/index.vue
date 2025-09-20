@@ -57,7 +57,7 @@
       <el-form :model="searchForm" inline>
         <el-form-item label="商户名称">
           <el-input
-            v-model="searchForm.business_name"
+            v-model="searchForm.keyword"
             placeholder="请输入商户名称"
             clearable
             style="width: 200px"
@@ -84,6 +84,10 @@
           <el-button @click="resetSearch">
             <el-icon><RefreshLeft /></el-icon>
             重置
+          </el-button>
+          <el-button @click="handleExport" :loading="exporting">
+            <el-icon><Download /></el-icon>
+            导出数据
           </el-button>
         </el-form-item>
       </el-form>
@@ -114,8 +118,11 @@
             {{ formatDate(row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="250" fixed="right">
           <template #default="{ row }">
+            <el-button size="small" @click="viewMerchantDetail(row)">
+              详情
+            </el-button>
             <el-button size="small" @click="viewMerchant(row)">
               查看
             </el-button>
@@ -220,6 +227,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   Shop, 
@@ -227,17 +235,21 @@ import {
   Clock, 
   Money, 
   Search, 
-  RefreshLeft 
+  RefreshLeft,
+  Download
 } from '@element-plus/icons-vue'
 import { merchantApi } from '@/api/merchant'
 import type { Merchant, MerchantListParams } from '@/types/merchant'
+import { MerchantStatus } from '@/types/common'
 import { formatDate } from '@/utils/format'
 
 // 响应式数据
+const router = useRouter()
 const merchants = ref<Merchant[]>([])
 const loading = ref(false)
 const total = ref(0)
 const approving = ref(false)
+const exporting = ref(false)
 
 // 商户详情
 const merchantDetailVisible = ref(false)
@@ -260,7 +272,7 @@ const merchantStats = ref({
 
 // 搜索表单
 const searchForm = reactive<MerchantListParams>({
-  business_name: '',
+  keyword: '',
   status: undefined,
   page: 1,
   limit: 20
@@ -294,7 +306,7 @@ const fetchMerchantStats = async () => {
 // 重置搜索
 const resetSearch = () => {
   Object.assign(searchForm, {
-    business_name: '',
+    keyword: '',
     status: undefined,
     page: 1,
     limit: 20
@@ -319,6 +331,25 @@ const viewMerchant = (merchant: Merchant) => {
   merchantDetailVisible.value = true
 }
 
+// 跳转到商户详情页面
+const viewMerchantDetail = (merchant: Merchant) => {
+  router.push(`/merchants/${merchant.id}`)
+}
+
+// 导出商户数据
+const handleExport = async () => {
+  try {
+    exporting.value = true
+    await merchantApi.exportMerchants(searchForm)
+    ElMessage.success('导出成功')
+  } catch (error) {
+    ElMessage.error('导出失败')
+    console.error(error)
+  } finally {
+    exporting.value = false
+  }
+}
+
 // 审核商户
 const approveMerchant = (merchant: Merchant) => {
   selectedMerchant.value = merchant
@@ -335,7 +366,7 @@ const submitApprove = async () => {
   try {
     if (approveForm.action === 'approve') {
       await merchantApi.approveMerchant(selectedMerchant.value.id, {
-        status: 'approved',
+        status: MerchantStatus.APPROVED,
         remark: approveForm.remark
       })
       ElMessage.success('商户审核通过')

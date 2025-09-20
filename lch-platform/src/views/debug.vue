@@ -112,7 +112,7 @@ const updateAuthStatus = () => {
 const testBackendConnection = async () => {
   testing.backend = true;
   try {
-    const response = await axios.get('http://localhost:5603/api');
+    const response = await axios.get('http://localhost:5600/api');
     apiStatus.backend = '✅ 连接成功';
   } catch (error: any) {
     console.error('后端连接测试失败:', error);

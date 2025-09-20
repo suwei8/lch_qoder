@@ -5,19 +5,19 @@ import type { User } from './user';
 export interface Merchant {
   id: number;
   user_id: number;
-  company_name: string;
-  contact_person: string;
+  business_name: string;
+  contact_name: string;
   contact_phone: string;
   email?: string;
-  address: string;
+  business_address: string;
   latitude?: number;
   longitude?: number;
-  business_license: string;
-  business_license_image?: string;
-  legal_person_id?: string;
-  legal_person_id_image?: string;
+  business_license_number: string;
+  business_license_url?: string;
+  id_card_front_url?: string;
+  id_card_back_url?: string;
   status: MerchantStatus;
-  reject_reason?: string;
+  remark?: string;
   commission_rate: number;
   settlement_cycle: SettlementCycle;
   total_revenue: number;
@@ -83,6 +83,6 @@ export interface UpdateMerchantDto {
 
 // 审批商户DTO
 export interface ApproveMerchantDto {
-  status: MerchantStatus;
-  reject_reason?: string;
+  status?: MerchantStatus;
+  remark?: string;
 }

@@ -9,8 +9,11 @@
     "report": "playwright show-report"
   },
   "dependencies": {
+    "@modelcontextprotocol/server-github": "^0.6.2",
     "@nestjs/axios": "^4.0.1",
+    "@playwright/mcp": "^0.0.37",
     "axios": "^1.11.0",
+    "data-uri-to-buffer": "^6.0.2",
     "node-fetch": "^2.7.0"
   },
   "devDependencies": {
@@ -19,5 +22,21 @@
     "playwright": "^1.55.0",
     "typescript": "^5.0.0",
     "vue-tsc": "^1.8.22"
-  }
+  },
+  "main": "admin-browser-test.js",
+  "directories": {
+    "doc": "doc",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/suwei8/lch_qoder.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/suwei8/lch_qoder/issues"
+  },
+  "homepage": "https://github.com/suwei8/lch_qoder#readme"
 }
