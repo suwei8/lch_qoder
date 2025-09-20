@@ -74,9 +74,9 @@ export const performanceConfig = {
 
     // 工具库分割
     utilsChunks: {
-      lodash: () => import('lodash'),
-      dayjs: () => import('dayjs'),
-      echarts: () => import('echarts')
+      // lodash: () => import('lodash'),
+      // dayjs: () => import('dayjs'),
+      // echarts: () => import('echarts')
     }
   },
 
@@ -181,7 +181,7 @@ export const performanceUtils = {
   // 动态导入组件
   dynamicImport(componentName: string) {
     const chunks = performanceConfig.codeSplitting.componentChunks
-    return chunks[componentName] ? chunks[componentName]() : null
+    return chunks[componentName as keyof typeof chunks] ? chunks[componentName as keyof typeof chunks]() : null
   },
 
   // 性能监控

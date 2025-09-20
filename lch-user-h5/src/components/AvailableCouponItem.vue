@@ -24,7 +24,7 @@
           <van-tag 
             v-if="coupon.isNewbie" 
             type="danger" 
-            size="mini"
+
           >
             新人专享
           </van-tag>
@@ -32,7 +32,7 @@
             v-for="tag in coupon.tags" 
             :key="tag"
             type="primary" 
-            size="mini"
+
           >
             {{ tag }}
           </van-tag>

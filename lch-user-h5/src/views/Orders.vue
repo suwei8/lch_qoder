@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ordersApi, type OrderListParams } from '@/api/orders'
 import type { Order } from '@/types'
@@ -159,7 +159,7 @@ const handleCancel = async (order: Order) => {
       message: '确认要取消这个订单吗？',
     })
     
-    await ordersApi.cancelOrder(order.id)
+    await ordersApi.cancelOrder(String(order.id))
     Toast.success('订单已取消')
     onRefresh()
   } catch (error: any) {
@@ -186,7 +186,7 @@ const handleRefund = async (order: Order) => {
 // 再次购买
 const handleReorder = async (order: Order) => {
   try {
-    const newOrder = await ordersApi.reorder(order.id)
+    const newOrder = await ordersApi.reorder(String(order.id))
     Toast.success('已为您创建新订单')
     router.push({
       path: '/payment',
@@ -206,7 +206,7 @@ const handleDelete = async (order: Order) => {
       message: '删除后无法恢复，确认要删除这个订单吗？',
     })
     
-    await ordersApi.deleteOrder(order.id)
+    await ordersApi.deleteOrder(String(order.id))
     Toast.success('订单已删除')
     onRefresh()
   } catch (error: any) {

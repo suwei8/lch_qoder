@@ -33,7 +33,7 @@
           <span class="pay-amount">¥{{ order.payAmount.toFixed(2) }}</span>
         </div>
         <div v-if="order.couponId" class="coupon-info">
-          <van-tag type="success" size="mini">优惠券</van-tag>
+          <van-tag type="success">优惠券</van-tag>
         </div>
       </div>
     </div>

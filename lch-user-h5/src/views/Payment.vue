@@ -28,7 +28,7 @@
           
           <div v-if="order.couponId" class="detail-item">
             <span class="label">优惠券：</span>
-            <span class="value discount">-¥{{ order.discountAmount.toFixed(2) }}</span>
+            <span class="value discount">-¥{{ (order.discountAmount || 0).toFixed(2) }}</span>
           </div>
         </div>
         
@@ -246,7 +246,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { paymentApi } from '@/api/payment'
-import type { Order, UserCoupon, Coupon } from '@/types'
+import type { Order, Coupon } from '@/types'
 import { Toast, Dialog } from 'vant'
 
 const route = useRoute()
@@ -314,7 +314,7 @@ const getMockCoupons = (): Coupon[] => {
       value: 5,
       minAmount: 10,
       validFrom: '2024-01-01',
-      validUntil: '2024-12-31',
+      validTo: '2024-12-31',
       description: '新用户专享优惠',
       isNewUser: true,
       status: 'unused'
@@ -326,7 +326,7 @@ const getMockCoupons = (): Coupon[] => {
       value: 0.85,
       minAmount: 0,
       validFrom: '2024-01-01',
-      validUntil: '2024-12-31',
+      validTo: '2024-12-31',
       description: '周末8.5折优惠',
       isNewUser: false,
       status: 'unused'

@@ -85,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { couponsApi, type UserCoupon, type CouponListParams, type CouponStatus } from '@/api/coupons'
 import { Toast } from 'vant'

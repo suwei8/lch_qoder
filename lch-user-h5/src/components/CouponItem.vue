@@ -23,16 +23,14 @@
         <div class="coupon-tags">
           <van-tag 
             v-if="coupon.isNewbie" 
-            type="danger" 
-            size="mini"
+            type="danger"
           >
             新人专享
           </van-tag>
           <van-tag 
             v-for="tag in coupon.tags" 
             :key="tag"
-            type="primary" 
-            size="mini"
+            type="primary"
           >
             {{ tag }}
           </van-tag>

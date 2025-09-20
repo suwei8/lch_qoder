@@ -1,86 +1,67 @@
 import request from '@/utils/request'
-import type { User } from '@/types'
+import type { LoginParams, LoginResponse, WechatConfig, User } from '@/types'
 
-export interface WechatLoginParams {
-  code: string
+// 微信登录
+export const wechatLogin = (params: { code: string }): Promise<LoginResponse> => {
+  return request.post('/auth/wechat/login', params)
 }
 
-export interface PhoneLoginParams {
-  phone: string
-  code: string
+// 手机号登录
+export const phoneLogin = (params: LoginParams): Promise<LoginResponse> => {
+  return request.post('/auth/phone/login', params)
 }
 
-export interface PhonePasswordLoginParams {
-  phone: string
-  password: string
+// 手机号密码登录
+export const phonePasswordLogin = (params: LoginParams): Promise<LoginResponse> => {
+  return request.post('/auth/phone/password-login', params)
 }
 
-export interface BindPhoneParams {
-  phone: string
-  code: string
+// 绑定手机号
+export const bindPhone = (params: { phone: string; code: string }): Promise<any> => {
+  return request.post('/auth/bind-phone', params)
 }
 
-export interface SendSmsCodeParams {
-  phone: string
-  type: 'login' | 'bind'
+// 获取用户信息
+export const getUserInfo = (): Promise<User> => {
+  return request.get('/auth/profile')
 }
 
-export interface WechatConfig {
-  appId: string
-  timestamp: number
-  nonceStr: string
-  signature: string
+// 获取微信配置
+export const getWechatConfig = (url: string): Promise<WechatConfig> => {
+  return request.post('/auth/wechat/config', { url })
 }
 
-export interface LoginResponse {
-  accessToken: string
-  refreshToken: string
-  user: User
+// 发送验证码
+export const sendSmsCode = (phone: string): Promise<any> => {
+  return request.post('/auth/send-sms', { phone })
+}
+
+// 刷新token
+export const refreshToken = (refreshToken: string): Promise<LoginResponse> => {
+  return request.post('/auth/refresh', { refreshToken })
+}
+
+// 退出登录
+export const logout = (): Promise<any> => {
+  return request.post('/auth/logout')
+}
+
+// 检查登录状态
+export const checkAuthStatus = (): Promise<User> => {
+  return request.get('/auth/check')
 }
 
 export const authApi = {
-  // 获取微信配置
-  getWechatConfig: (url: string): Promise<WechatConfig> => {
-    return request.get('/auth/wechat/config', { params: { url } })
-  },
-
-  // 微信登录
-  wechatLogin: (params: WechatLoginParams): Promise<LoginResponse> => {
-    return request.post('/auth/wechat/login', params)
-  },
-
-  // 手机号登录（验证码方式）
-  phoneLogin: (params: PhoneLoginParams): Promise<LoginResponse> => {
-    return request.post('/auth/phone/login', params)
-  },
-
-  // 手机号密码登录
-  phonePasswordLogin: (params: PhonePasswordLoginParams): Promise<LoginResponse> => {
-    return request.post('/auth/phone/password', params)
-  },
-
-  // 绑定手机号
-  bindPhone: (params: BindPhoneParams): Promise<void> => {
-    return request.post('/auth/bind-phone', params)
-  },
-
-  // 发送短信验证码
-  sendSmsCode: (params: SendSmsCodeParams): Promise<void> => {
-    return request.post('/auth/sms/send', params)
-  },
-
-  // 获取用户信息
-  getUserInfo: (): Promise<User> => {
-    return request.get('/auth/me')
-  },
-
-  // 刷新token
-  refreshToken: (refreshToken: string): Promise<{ accessToken: string }> => {
-    return request.post('/auth/refresh', { refreshToken })
-  },
-
-  // 退出登录
-  logout: (): Promise<void> => {
-    return request.post('/auth/logout')
-  }
+  wechatLogin,
+  phoneLogin,
+  phonePasswordLogin,
+  bindPhone,
+  getUserInfo,
+  getWechatConfig,
+  sendSmsCode,
+  refreshToken,
+  logout,
+  checkAuthStatus
 }
+
+export default authApi

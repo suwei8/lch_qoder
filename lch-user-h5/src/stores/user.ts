@@ -1,33 +1,73 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { User, Location } from '@/types'
 import { authApi } from '@/api/auth'
+import type { User, LoginResponse, Location } from '@/types'
 import { showSuccessToast } from 'vant'
 
 export const useUserStore = defineStore('user', () => {
   // 状态
   const user = ref<User | null>(null)
-  const token = ref<string>('')
+  const accessToken = ref<string>('')
+  const refreshToken = ref<string>('')
   const location = ref<Location | null>(null)
   const isWechatReady = ref(false)
 
   // 计算属性
-  const isAuthenticated = computed(() => !!token.value && !!user.value)
+  const isLoggedIn = computed(() => !!accessToken.value && !!user.value)
+  const isAuthenticated = computed(() => !!accessToken.value && !!user.value)
   const totalBalance = computed(() => (user.value?.balance || 0) + (user.value?.giftBalance || 0))
+  const unreadOrderCount = computed(() => 0) // 临时返回0，后续可以从API获取
+  const hasUnreadMessage = computed(() => false) // 临时返回false
+  const availableCouponCount = computed(() => 0) // 临时返回0
 
-  // 设置用户信息
-  const setUser = (userInfo: User) => {
-    user.value = userInfo
+  // 从本地存储恢复状态
+  const restoreFromStorage = () => {
+    const storedToken = localStorage.getItem('accessToken')
+    const storedRefreshToken = localStorage.getItem('refreshToken')
+    const storedUser = localStorage.getItem('user')
+
+    if (storedToken) {
+      accessToken.value = storedToken
+    }
+    if (storedRefreshToken) {
+      refreshToken.value = storedRefreshToken
+    }
+    if (storedUser) {
+      try {
+        user.value = JSON.parse(storedUser)
+      } catch (error) {
+        console.error('解析用户信息失败:', error)
+        clearStorage()
+      }
+    }
   }
 
-  // 设置token
-  const setToken = (newToken: string) => {
-    token.value = newToken
-    if (newToken) {
-      localStorage.setItem('user_token', newToken)
-    } else {
-      localStorage.removeItem('user_token')
+  // 保存到本地存储
+  const saveToStorage = () => {
+    if (accessToken.value) {
+      localStorage.setItem('accessToken', accessToken.value)
     }
+    if (refreshToken.value) {
+      localStorage.setItem('refreshToken', refreshToken.value)
+    }
+    if (user.value) {
+      localStorage.setItem('user', JSON.stringify(user.value))
+    }
+  }
+
+  // 清除本地存储
+  const clearStorage = () => {
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
+    localStorage.removeItem('user')
+  }
+
+  // 设置登录信息
+  const setLoginInfo = (loginResponse: LoginResponse) => {
+    accessToken.value = loginResponse.accessToken
+    refreshToken.value = loginResponse.refreshToken || ''
+    user.value = loginResponse.user
+    saveToStorage()
   }
 
   // 设置位置信息
@@ -35,49 +75,16 @@ export const useUserStore = defineStore('user', () => {
     location.value = loc
   }
 
-  // 初始化微信配置
-  const initWechatConfig = async () => {
-    try {
-      // 检查是否在微信浏览器中
-      if (typeof window !== 'undefined' && window.navigator.userAgent.includes('MicroMessenger')) {
-        // 初始化微信JS-SDK
-        const wx = (window as any).wx
-        if (wx) {
-          // 获取微信配置
-          const config = await authApi.getWechatConfig(window.location.href)
-          wx.config({
-            debug: false,
-            appId: config.appId,
-            timestamp: config.timestamp,
-            nonceStr: config.nonceStr,
-            signature: config.signature,
-            jsApiList: ['getLocation', 'chooseWXPay', 'updateAppMessageShareData', 'updateTimelineShareData']
-          })
-
-          wx.ready(() => {
-            isWechatReady.value = true
-            console.log('微信JS-SDK初始化成功')
-          })
-
-          wx.error((res: any) => {
-            console.error('微信JS-SDK初始化失败:', res)
-          })
-        }
-      } else {
-        // 非微信环境，模拟初始化
-        isWechatReady.value = true
-      }
-    } catch (error) {
-      console.error('初始化微信配置失败:', error)
-    }
+  // 更新位置信息
+  const updateLocation = (loc: Location) => {
+    setLocation(loc)
   }
 
-  // 微信OAuth登录
-  const wechatLogin = async (code: string) => {
+  // 微信登录
+  const wechatLogin = async (code: string): Promise<LoginResponse> => {
     try {
       const response = await authApi.wechatLogin({ code })
-      setToken(response.accessToken)
-      setUser(response.user)
+      setLoginInfo(response)
       return response
     } catch (error) {
       console.error('微信登录失败:', error)
@@ -85,12 +92,11 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  // 手机号登录（验证码方式）
-  const phoneLogin = async (phone: string, code: string) => {
+  // 手机号登录
+  const phoneLogin = async (phone: string, code: string): Promise<LoginResponse> => {
     try {
       const response = await authApi.phoneLogin({ phone, code })
-      setToken(response.accessToken)
-      setUser(response.user)
+      setLoginInfo(response)
       return response
     } catch (error) {
       console.error('手机号登录失败:', error)
@@ -99,157 +105,115 @@ export const useUserStore = defineStore('user', () => {
   }
 
   // 手机号密码登录
-  const phonePasswordLogin = async (phone: string, password: string) => {
-    // 如果是演示账号，直接使用模拟数据
-    if (phone === '13800138000' && password === '123456') {
-      console.log('检测到演示账号，使用模拟登录')
-      const mockUser = {
-        id: 1001,
-        openid: 'demo-openid-001',
-        nickname: '测试用户',
-        avatar: 'https://avatars.githubusercontent.com/u/1?v=4',
-        phone: '13800138000',
-        balance: 100.00,
-        giftBalance: 50.00,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
-      
-      const mockToken = `mock-access-token-${Date.now()}`
-      setToken(mockToken)
-      setUser(mockUser)
-      
-      return {
-        user: mockUser,
-        accessToken: mockToken
-      }
-    }
-    
+  const phonePasswordLogin = async (phone: string, password: string): Promise<LoginResponse> => {
     try {
       const response = await authApi.phonePasswordLogin({ phone, password })
-      setToken(response.accessToken)
-      setUser(response.user)
+      setLoginInfo(response)
       return response
     } catch (error) {
-      console.error('手机号密码登录失败:', error)
+      console.error('密码登录失败:', error)
       throw error
     }
   }
 
   // 绑定手机号
-  const bindPhone = async (phone: string, code: string) => {
+  const bindPhone = async (phone: string, code: string): Promise<void> => {
     try {
-      const response = await authApi.bindPhone({ phone, code })
-      if (user.value) {
-        user.value.phone = phone
-      }
-      return response
+      await authApi.bindPhone({ phone, code })
+      // 绑定成功后更新用户信息
+      await getUserInfo()
     } catch (error) {
       console.error('绑定手机号失败:', error)
       throw error
     }
   }
 
-  // 检查认证状态
-  const checkAuthStatus = async () => {
+  // 获取用户信息
+  const getUserInfo = async (): Promise<User> => {
     try {
-      const savedToken = localStorage.getItem('user_token')
-      if (!savedToken) return false
-
-      // 如果是模拟 Token，直接返回 true，不调用 API
-      if (savedToken.startsWith('mock-access-token')) {
-        console.log('检测到模拟 Token，跳过 API 验证')
-        setToken(savedToken)
-        
-        // 设置模拟用户数据
-        const mockUser = {
-          id: 1001,
-          openid: 'demo-openid-001',
-          nickname: '测试用户',
-          avatar: 'https://avatars.githubusercontent.com/u/1?v=4',
-          phone: '13800138000',
-          balance: 100.00,
-          giftBalance: 50.00,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-        setUser(mockUser)
-        return true
-      }
-
-      setToken(savedToken)
       const userInfo = await authApi.getUserInfo()
-      setUser(userInfo)
-      return true
+      user.value = userInfo
+      saveToStorage()
+      return userInfo
     } catch (error) {
-      console.error('检查认证状态失败:', error)
-      logout()
-      return false
+      console.error('获取用户信息失败:', error)
+      throw error
     }
   }
 
-  // 获取位置信息
-  const getLocation = async (): Promise<Location> => {
-    return new Promise((resolve, reject) => {
-      if (location.value) {
-        resolve(location.value)
-        return
+  // 刷新token
+  const refreshAccessToken = async (): Promise<string> => {
+    try {
+      if (!refreshToken.value) {
+        throw new Error('没有刷新token')
       }
-
-      if (isWechatReady.value && typeof window !== 'undefined') {
-        const wx = (window as any).wx
-        wx.getLocation({
-          type: 'wgs84',
-          success: (res: any) => {
-            const loc = {
-              latitude: res.latitude,
-              longitude: res.longitude
-            }
-            setLocation(loc)
-            resolve(loc)
-          },
-          fail: () => {
-            // 微信获取位置失败，使用浏览器定位
-            getBrowserLocation().then(resolve).catch(reject)
-          }
-        })
-      } else {
-        getBrowserLocation().then(resolve).catch(reject)
-      }
-    })
+      const response = await authApi.refreshToken(refreshToken.value)
+      accessToken.value = response.accessToken
+      saveToStorage()
+      return response.accessToken
+    } catch (error) {
+      console.error('刷新token失败:', error)
+      // 刷新失败，清除登录状态
+      logout()
+      throw error
+    }
   }
 
-  // 浏览器获取位置
-  const getBrowserLocation = (): Promise<Location> => {
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) {
-        reject(new Error('浏览器不支持定位'))
-        return
+  // 退出登录
+  const logout = async (): Promise<void> => {
+    try {
+      if (accessToken.value) {
+        await authApi.logout()
       }
+    } catch (error) {
+      console.error('退出登录失败:', error)
+    } finally {
+      // 无论是否成功，都清除本地状态
+      user.value = null
+      accessToken.value = ''
+      refreshToken.value = ''
+      clearStorage()
+      showSuccessToast('已退出登录')
+    }
+  }
 
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const loc = {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
-          }
-          setLocation(loc)
-          resolve(loc)
-        },
-        (error) => {
-          console.error('获取位置失败:', error)
-          // 返回默认位置（北京）
-          const defaultLoc = { latitude: 39.9042, longitude: 116.4074 }
-          setLocation(defaultLoc)
-          resolve(defaultLoc)
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000
+  // 检查登录状态
+  const checkAuthStatus = async (): Promise<boolean> => {
+    if (!accessToken.value) {
+      return false
+    }
+
+    try {
+      const userInfo = await authApi.getUserInfo()
+      user.value = userInfo
+      saveToStorage()
+      return true
+    } catch (error) {
+      console.error('检查登录状态失败:', error)
+      // 如果token无效，尝试刷新
+      if (refreshToken.value) {
+        try {
+          await refreshAccessToken()
+          return await checkAuthStatus()
+        } catch (refreshError) {
+          logout()
+          return false
         }
-      )
-    })
+      } else {
+        logout()
+        return false
+      }
+    }
+  }
+
+  // 发送短信验证码
+  const sendSmsCode = async (phone: string, type: 'login' | 'bind' = 'login'): Promise<void> => {
+    try {
+      await authApi.sendSmsCode(phone)
+    } catch (error) {
+      console.error('发送验证码失败:', error)
+      throw error
+    }
   }
 
   // 更新用户余额
@@ -257,41 +221,55 @@ export const useUserStore = defineStore('user', () => {
     if (user.value) {
       user.value.balance = balance
       user.value.giftBalance = giftBalance
+      saveToStorage()
     }
   }
 
-  // 退出登录
-  const logout = () => {
-    user.value = null
-    token.value = ''
-    location.value = null
-    localStorage.removeItem('user_token')
-    showSuccessToast('已退出登录')
+  // 刷新用户信息
+  const refreshUserInfo = async () => {
+    return await checkAuthStatus()
   }
+
+  // 获取用户信息
+  const fetchUserInfo = async () => {
+    return await checkAuthStatus()
+  }
+
+  // 初始化时恢复状态
+  restoreFromStorage()
 
   return {
     // 状态
     user,
-    token,
+    accessToken,
+    refreshToken,
     location,
     isWechatReady,
     
     // 计算属性
+    isLoggedIn,
     isAuthenticated,
     totalBalance,
+    unreadOrderCount,
+    hasUnreadMessage,
+    availableCouponCount,
     
     // 方法
-    setUser,
-    setToken,
-    setLocation,
-    initWechatConfig,
     wechatLogin,
     phoneLogin,
     phonePasswordLogin,
     bindPhone,
+    getUserInfo,
+    refreshAccessToken,
+    logout,
     checkAuthStatus,
-    getLocation,
+    sendSmsCode,
+    restoreFromStorage,
+    setLoginInfo,
+    setLocation,
+    updateLocation,
     updateBalance,
-    logout
+    refreshUserInfo,
+    fetchUserInfo
   }
 })

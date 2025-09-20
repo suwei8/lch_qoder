@@ -165,13 +165,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+// import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { rechargeApi, type RechargePackage, type CreateRechargeOrderParams } from '@/api/recharge'
 import { Toast, Dialog } from 'vant'
 import RechargeRecords from '@/components/RechargeRecords.vue'
 
-const router = useRouter()
+// const router = useRouter()
 const userStore = useUserStore()
 
 // 状态管理
@@ -297,8 +297,8 @@ const handleWechatPay = async (orderResponse: any) => {
     // 暂时模拟支付成功，实际项目中需要集成真实的微信支付
     
     // 轮询检查订单状态
-    let attempts = 0
-    const maxAttempts = 30 // 最多检查30次，每次间隔2秒
+    // let attempts = 0
+    // const maxAttempts = 30 // 最多检查30次，每次间隔2秒
     
     const checkPaymentStatus = async (): Promise<boolean> => {
       try {

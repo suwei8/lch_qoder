@@ -112,8 +112,8 @@
       round
     >
       <van-date-picker
-        v-model="selectedDate"
-        @confirm="onDateConfirm"
+        v-model="selectedDateArray"
+        @confirm="handleDateConfirm"
         @cancel="showDatePicker = false"
         :min-date="minDate"
         :max-date="maxDate"
@@ -151,6 +151,7 @@ const formData = reactive({
 
 // 日期选择器数据
 const selectedDate = ref(new Date())
+const selectedDateArray = ref<string[]>([])
 const minDate = new Date('1950-01-01')
 const maxDate = new Date()
 
@@ -189,12 +190,12 @@ const onGenderConfirm = ({ selectedOptions }: any) => {
   showGenderPicker.value = false
 }
 
-// 日期选择确认
-const onDateConfirm = () => {
-  const year = selectedDate.value.getFullYear()
-  const month = String(selectedDate.value.getMonth() + 1).padStart(2, '0')
-  const day = String(selectedDate.value.getDate()).padStart(2, '0')
-  formData.birthday = `${year}-${month}-${day}`
+// 日期确认
+const handleDateConfirm = (values: string[]) => {
+  const [year, month, day] = values
+  const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+  selectedDate.value = date
+  formData.birthday = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
   showDatePicker.value = false
 }
 

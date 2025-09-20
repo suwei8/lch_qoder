@@ -1,256 +1,330 @@
 <template>
   <div class="order-detail-container">
     <!-- 导航栏 -->
-    <van-nav-bar title="订单详情" left-arrow @click-left="$router.back()" />
-    
-    <div v-if="isLoading" class="loading-container">
-      <van-loading size="24px">加载中...</van-loading>
-    </div>
-    
-    <div v-else-if="order" class="order-detail-content">
+    <van-nav-bar title="订单详情" left-arrow @click-left="goBack" />
+
+    <div v-if="orderDetail" class="order-content">
       <!-- 订单状态 -->
       <div class="status-card">
-        <div class="status-icon" :class="statusClass">
-          <van-icon :name="statusIcon" />
+        <div class="status-icon" :class="orderDetail.status">
+          <van-icon :name="getStatusIcon(orderDetail.status)" />
         </div>
         <div class="status-info">
-          <h2>{{ statusText }}</h2>
-          <p class="status-desc">{{ statusDescription }}</p>
+          <h2 class="status-title">{{ getStatusText(orderDetail.status) }}</h2>
+          <p class="status-desc">{{ getStatusDescription(orderDetail.status) }}</p>
+          <p class="order-time">{{ formatTime(orderDetail.createdAt) }}</p>
         </div>
       </div>
-      
-      <!-- 选项卡 -->
-      <van-tabs v-model:active="activeTab" sticky>
-        <van-tab title="订单信息" name="info">
-          <order-info-tab :order="order" />
-        </van-tab>
-        
-        <van-tab title="进度详情" name="timeline">
-          <order-timeline-tab :timeline="order.timeline || []" />
-        </van-tab>
-        
-        <van-tab 
-          v-if="canRefund" 
-          title="退款申请" 
-          name="refund"
+
+      <!-- 服务信息 -->
+      <div class="service-card">
+        <h3 class="card-title">服务信息</h3>
+        <div class="service-info">
+          <div class="service-header">
+            <h4 class="service-name">{{ orderDetail.serviceName }}</h4>
+            <span class="service-price">¥{{ orderDetail.servicePrice }}</span>
+          </div>
+          <p class="service-desc">{{ orderDetail.serviceDescription }}</p>
+          <div class="service-features">
+            <span 
+              v-for="feature in orderDetail.serviceFeatures" 
+              :key="feature"
+              class="feature-tag"
+            >
+              {{ feature }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 门店信息 -->
+      <div class="store-card">
+        <h3 class="card-title">门店信息</h3>
+        <div class="store-info">
+          <div class="store-header">
+            <van-icon name="shop-o" />
+            <span class="store-name">{{ orderDetail.storeName }}</span>
+          </div>
+          <div class="store-address">
+            <van-icon name="location-o" />
+            <span>{{ orderDetail.storeAddress }}</span>
+          </div>
+          <div class="store-phone">
+            <van-icon name="phone-o" />
+            <span>{{ orderDetail.storePhone }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 设备信息 -->
+      <div class="device-card">
+        <h3 class="card-title">设备信息</h3>
+        <div class="device-info">
+          <div class="device-header">
+            <van-icon name="desktop-o" />
+            <span class="device-name">{{ orderDetail.deviceName }}</span>
+          </div>
+          <div class="device-location">
+            <span>位置：{{ orderDetail.deviceLocation }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 订单信息 -->
+      <div class="order-info-card">
+        <h3 class="card-title">订单信息</h3>
+        <div class="order-details">
+          <div class="detail-item">
+            <span class="detail-label">订单号</span>
+            <span class="detail-value">{{ orderDetail.orderNumber }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">下单时间</span>
+            <span class="detail-value">{{ formatFullTime(orderDetail.createdAt) }}</span>
+          </div>
+          <div class="detail-item" v-if="orderDetail.startTime">
+            <span class="detail-label">开始时间</span>
+            <span class="detail-value">{{ formatFullTime(orderDetail.startTime) }}</span>
+          </div>
+          <div class="detail-item" v-if="orderDetail.endTime">
+            <span class="detail-label">结束时间</span>
+            <span class="detail-value">{{ formatFullTime(orderDetail.endTime) }}</span>
+          </div>
+          <div class="detail-item" v-if="orderDetail.duration">
+            <span class="detail-label">洗车时长</span>
+            <span class="detail-value">{{ formatDuration(orderDetail.duration) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 费用明细 -->
+      <div class="payment-card">
+        <h3 class="card-title">费用明细</h3>
+        <div class="payment-details">
+          <div class="payment-item">
+            <span class="payment-label">服务费用</span>
+            <span class="payment-value">¥{{ orderDetail.servicePrice }}</span>
+          </div>
+          <div class="payment-item" v-if="(orderDetail.discountAmount || 0) > 0">
+            <span class="payment-label">优惠金额</span>
+            <span class="payment-value discount">-¥{{ orderDetail.discountAmount }}</span>
+          </div>
+          <div class="payment-item total">
+            <span class="payment-label">实付金额</span>
+            <span class="payment-value">¥{{ orderDetail.actualAmount }}</span>
+          </div>
+          <div class="payment-method">
+            <span class="payment-label">支付方式</span>
+            <span class="payment-value">{{ getPaymentMethodText(orderDetail.paymentMethod) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="action-buttons">
+        <van-button 
+          v-if="orderDetail.status === 'processing'"
+          type="warning"
+          size="large"
+          @click="cancelOrder"
         >
-          <order-refund-tab 
-            :order="order" 
-            @submit-refund="handleRefund"
-          />
-        </van-tab>
-      </van-tabs>
+          取消订单
+        </van-button>
+        
+        <van-button 
+          v-if="orderDetail.status === 'completed'"
+          type="default"
+          size="large"
+          @click="reorder"
+        >
+          再次下单
+        </van-button>
+        
+        <van-button 
+          type="primary"
+          size="large"
+          @click="contactService"
+        >
+          联系客服
+        </van-button>
+      </div>
     </div>
-    
-    <!-- 底部操作按钮 -->
-    <div v-if="order" class="bottom-actions">
-      <van-button 
-        v-if="order.status === 'pending'"
-        size="large"
-        @click="handleCancel"
-      >
-        取消订单
-      </van-button>
-      
-      <van-button 
-        v-if="order.status === 'pending'"
-        type="primary" 
-        size="large"
-        @click="handlePay"
-      >
-        立即支付
-      </van-button>
-      
-      <van-button 
-        v-if="order.status === 'completed' && !hasRefunded"
-        size="large"
-        @click="activeTab = 'refund'"
-      >
-        申请退款
-      </van-button>
-      
-      <van-button 
-        v-if="['completed', 'cancelled', 'refunded'].includes(order.status)"
-        type="primary" 
-        size="large"
-        @click="handleReorder"
-      >
-        再次购买
-      </van-button>
-    </div>
+
+    <!-- 加载状态 -->
+    <van-loading 
+      v-else
+      size="24px" 
+      vertical
+      class="loading-center"
+    >
+      加载中...
+    </van-loading>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ordersApi, type RefundParams } from '@/api/orders'
-import type { Order } from '@/types'
-import { Toast, Dialog } from 'vant'
-import OrderInfoTab from '@/components/OrderInfoTab.vue'
-import OrderTimelineTab from '@/components/OrderTimelineTab.vue'
-import OrderRefundTab from '@/components/OrderRefundTab.vue'
+import { showDialog, showSuccessToast } from 'vant'
+import { getOrderDetail, cancelOrderApi } from '@/api/order'
+import type { OrderDetail } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
 
-const isLoading = ref(false)
-const order = ref<Order | null>(null)
-const activeTab = ref('info')
+// 响应式数据
+const orderDetail = ref<OrderDetail | null>(null)
 
-// 从路由参数获取默认选项卡
-if (route.query.tab) {
-  activeTab.value = route.query.tab as string
+// 状态文本映射
+const statusTextMap = {
+  pending: '待支付',
+  processing: '洗车中',
+  completed: '已完成',
+  cancelled: '已取消',
+  refunded: '已退款'
 }
 
-// 订单状态相关计算属性
-const statusText = computed(() => {
-  if (!order.value) return ''
-  
-  const statusMap = {
-    pending: '待支付',
-    paid: '已支付',
-    using: '使用中',
-    completed: '已完成',
-    cancelled: '已取消',
-    refunding: '退款中',
-    refunded: '已退款'
-  }
-  
-  return statusMap[order.value.status as keyof typeof statusMap] || '未知'
-})
+// 状态描述映射
+const statusDescMap = {
+  pending: '请尽快完成支付',
+  processing: '设备正在为您服务',
+  completed: '洗车服务已完成',
+  cancelled: '订单已取消',
+  refunded: '费用已退回原支付方式'
+}
 
-const statusDescription = computed(() => {
-  if (!order.value) return ''
-  
-  const descMap = {
-    pending: '请尽快完成支付',
-    paid: '订单支付成功，等待使用',
-    using: '设备使用中，请注意安全',
-    completed: '订单已完成，感谢您的使用',
-    cancelled: '订单已取消',
-    refunding: '退款申请已提交，请耐心等待',
-    refunded: '退款已完成'
-  }
-  
-  return descMap[order.value.status as keyof typeof descMap] || ''
-})
+// 状态图标映射
+const statusIconMap = {
+  pending: 'clock-o',
+  processing: 'play-circle-o',
+  completed: 'success',
+  cancelled: 'cross',
+  refunded: 'refund-o'
+}
 
-const statusIcon = computed(() => {
-  if (!order.value) return 'info-o'
-  
-  const iconMap = {
-    pending: 'clock-o',
-    paid: 'checked',
-    using: 'play-circle-o',
-    completed: 'success',
-    cancelled: 'cross',
-    refunding: 'refund-o',
-    refunded: 'refund-o'
-  }
-  
-  return iconMap[order.value.status as keyof typeof iconMap] || 'info-o'
-})
-
-const statusClass = computed(() => {
-  if (!order.value) return ''
-  
-  const classMap = {
-    pending: 'status-pending',
-    paid: 'status-paid',
-    using: 'status-using',
-    completed: 'status-completed',
-    cancelled: 'status-cancelled',
-    refunding: 'status-refunding',
-    refunded: 'status-refunded'
-  }
-  
-  return classMap[order.value.status as keyof typeof classMap] || ''
-})
-
-const canRefund = computed(() => {
-  return order.value?.status === 'completed' && !hasRefunded.value
-})
-
-const hasRefunded = computed(() => {
-  return ['refunding', 'refunded'].includes(order.value?.status || '')
-})
+// 支付方式文本映射
+const paymentMethodMap = {
+  wechat: '微信支付',
+  alipay: '支付宝',
+  balance: '余额支付'
+}
 
 // 加载订单详情
 const loadOrderDetail = async () => {
+  const orderId = route.params.id as string
+  
   try {
-    isLoading.value = true
-    const orderId = route.params.id as string
-    order.value = await ordersApi.getOrderDetail(orderId)
+    const response = await getOrderDetail(parseInt(orderId))
+    orderDetail.value = response.data
   } catch (error) {
     console.error('加载订单详情失败:', error)
-    Toast.fail('加载失败')
-  } finally {
-    isLoading.value = false
   }
 }
 
 // 取消订单
-const handleCancel = async () => {
-  if (!order.value) return
-  
+const cancelOrder = async () => {
+  if (!orderDetail.value) return
+
+  const result = await showDialog({
+    title: '确认取消',
+    message: '确定要取消这个订单吗？已消费的费用不会退还。',
+    confirmButtonText: '确认取消',
+    cancelButtonText: '我再想想'
+  })
+
+  if (result !== 'confirm') return
+
   try {
-    await Dialog.confirm({
-      title: '取消订单',
-      message: '确认要取消这个订单吗？',
-    })
-    
-    await ordersApi.cancelOrder(order.value.id)
-    Toast.success('订单已取消')
-    await loadOrderDetail()
-  } catch (error: any) {
-    if (error !== 'cancel') {
-      console.error('取消订单失败:', error)
-      Toast.fail('取消失败')
-    }
+    await cancelOrderApi(orderDetail.value.id)
+    showSuccessToast('订单已取消')
+    loadOrderDetail() // 重新加载订单详情
+  } catch (error) {
+    console.error('取消订单失败:', error)
   }
 }
 
-// 去支付
-const handlePay = () => {
-  if (!order.value) return
-  
-  router.push({
-    path: '/payment',
-    query: { orderId: order.value.id }
+// 重新下单
+const reorder = () => {
+  if (!orderDetail.value) return
+  router.push(`/store/${orderDetail.value.storeId}`)
+}
+
+// 联系客服
+const contactService = () => {
+  showDialog({
+    title: '联系客服',
+    message: '客服电话：400-123-4567\n工作时间：9:00-21:00',
+    confirmButtonText: '拨打电话',
+    cancelButtonText: '取消'
+  }).then((action) => {
+    if (action === 'confirm') {
+      window.location.href = 'tel:400-123-4567'
+    }
   })
 }
 
-// 处理退款申请
-const handleRefund = async (params: RefundParams) => {
-  try {
-    await ordersApi.requestRefund(params)
-    Toast.success('退款申请已提交')
-    await loadOrderDetail()
-    activeTab.value = 'timeline'
-  } catch (error) {
-    console.error('申请退款失败:', error)
-    Toast.fail('申请失败')
-  }
+// 返回上一页
+const goBack = () => {
+  router.back()
 }
 
-// 再次购买
-const handleReorder = async () => {
-  if (!order.value) return
+// 获取状态文本
+const getStatusText = (status: string) => {
+  return statusTextMap[status as keyof typeof statusTextMap] || status
+}
+
+// 获取状态描述
+const getStatusDescription = (status: string) => {
+  return statusDescMap[status as keyof typeof statusDescMap] || ''
+}
+
+// 获取状态图标
+const getStatusIcon = (status: string) => {
+  return statusIconMap[status as keyof typeof statusIconMap] || 'info-o'
+}
+
+// 获取支付方式文本
+const getPaymentMethodText = (method: string) => {
+  return paymentMethodMap[method as keyof typeof paymentMethodMap] || method
+}
+
+// 格式化时间
+const formatTime = (time: string) => {
+  const date = new Date(time)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
   
-  try {
-    const newOrder = await ordersApi.reorder(order.value.id)
-    Toast.success('已为您创建新订单')
-    router.push({
-      path: '/payment',
-      query: { orderId: newOrder.id }
-    })
-  } catch (error) {
-    console.error('再次购买失败:', error)
-    Toast.fail('操作失败')
+  if (diff < 60000) {
+    return '刚刚'
+  } else if (diff < 3600000) {
+    return `${Math.floor(diff / 60000)}分钟前`
+  } else if (diff < 86400000) {
+    return `${Math.floor(diff / 3600000)}小时前`
+  } else {
+    return date.toLocaleDateString()
   }
 }
 
+// 格式化完整时间
+const formatFullTime = (time: string) => {
+  const date = new Date(time)
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+// 格式化时长
+const formatDuration = (seconds: number) => {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins}分${secs}秒`
+}
+
+// 组件挂载
 onMounted(() => {
   loadOrderDetail()
 })
@@ -260,103 +334,242 @@ onMounted(() => {
 .order-detail-container {
   min-height: 100vh;
   background: #f7f8fa;
-  padding-bottom: 80px;
-}
-
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 200px;
-}
-
-.order-detail-content {
   padding-bottom: 20px;
 }
 
-.status-card {
+.order-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 通用卡片样式 */
+.status-card,
+.service-card,
+.store-card,
+.device-card,
+.order-info-card,
+.payment-card {
   background: white;
-  margin: 12px;
   border-radius: 12px;
-  padding: 24px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #323233;
+  margin: 0 0 16px 0;
+}
+
+/* 订单状态卡片 */
+.status-card {
   display: flex;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #1989fa 0%, #1c7cd6 100%);
+  color: white;
 }
 
 .status-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
+  width: 60px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
   margin-right: 16px;
-  font-size: 24px;
 }
 
-.status-pending {
-  background: #fff7e6;
-  color: #ff9500;
+.status-icon .van-icon {
+  font-size: 28px;
 }
 
-.status-paid,
-.status-using {
-  background: #e8f4ff;
-  color: #1989fa;
+.status-info {
+  flex: 1;
 }
 
-.status-completed {
-  background: #f0f9ff;
-  color: #07c160;
-}
-
-.status-cancelled {
-  background: #f7f8fa;
-  color: #969799;
-}
-
-.status-refunding,
-.status-refunded {
-  background: #fff7e6;
-  color: #ff9500;
-}
-
-.status-info h2 {
-  font-size: 18px;
+.status-title {
+  font-size: 20px;
   font-weight: 600;
-  color: #323233;
-  margin: 0 0 4px;
+  margin: 0 0 4px 0;
 }
 
 .status-desc {
   font-size: 14px;
-  color: #646566;
+  opacity: 0.9;
+  margin: 0 0 4px 0;
+}
+
+.order-time {
+  font-size: 12px;
+  opacity: 0.7;
   margin: 0;
 }
 
-.van-tabs {
-  background: white;
-  margin: 0 12px;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+/* 服务信息卡片 */
+.service-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
-.bottom-actions {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: white;
-  padding: 12px 16px;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+.service-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #323233;
+  margin: 0;
+}
+
+.service-price {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ee0a24;
+}
+
+.service-desc {
+  font-size: 14px;
+  color: #646566;
+  margin: 0 0 12px 0;
+}
+
+.service-features {
   display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.feature-tag {
+  padding: 2px 8px;
+  background: #f2f3f5;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #646566;
+}
+
+/* 门店和设备信息 */
+.store-info,
+.device-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.store-header,
+.device-header {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #323233;
+}
+
+.store-header .van-icon,
+.device-header .van-icon {
+  margin-right: 8px;
+  color: #1989fa;
+}
+
+.store-address,
+.store-phone,
+.device-location {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #646566;
+}
+
+.store-address .van-icon,
+.store-phone .van-icon {
+  margin-right: 8px;
+  color: #969799;
+}
+
+/* 订单详情 */
+.order-details {
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
-.bottom-actions .van-button {
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-label {
+  font-size: 14px;
+  color: #646566;
+}
+
+.detail-value {
+  font-size: 14px;
+  color: #323233;
+  font-weight: 500;
+}
+
+/* 费用明细 */
+.payment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.payment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.payment-item.total {
+  padding-top: 12px;
+  border-top: 1px solid #f2f3f5;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.payment-label {
+  font-size: 14px;
+  color: #646566;
+}
+
+.payment-value {
+  font-size: 14px;
+  color: #323233;
+  font-weight: 500;
+}
+
+.payment-value.discount {
+  color: #07c160;
+}
+
+.payment-method {
+  padding-top: 8px;
+  border-top: 1px solid #f2f3f5;
+}
+
+/* 操作按钮 */
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.action-buttons .van-button {
   flex: 1;
-  height: 44px;
+  border-radius: 12px;
+  height: 48px;
+}
+
+/* 加载状态 */
+.loading-center {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 </style>

@@ -128,7 +128,7 @@ const handleSubmit = async () => {
     isSubmitting.value = true
     
     const params: RefundParams = {
-      orderId: props.order.id,
+      orderId: String(props.order.id),
       reason: refundForm.reason,
       description: refundForm.description || undefined
     }

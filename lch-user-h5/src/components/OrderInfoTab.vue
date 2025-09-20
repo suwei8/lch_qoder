@@ -207,7 +207,7 @@ const paymentMethodText = computed(() => {
 // 复制订单号
 const copyOrderNo = async () => {
   try {
-    await navigator.clipboard.writeText(props.order.orderNo || props.order.id)
+    await navigator.clipboard.writeText(props.order.orderNo || String(props.order.id))
     Toast.success('订单号已复制')
   } catch (error) {
     Toast.fail('复制失败')

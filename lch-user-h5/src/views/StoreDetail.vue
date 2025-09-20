@@ -40,7 +40,7 @@
           
           <div class="info-item" v-if="store.distance">
             <van-icon name="location" />
-            <span>距离：{{ formatDistance(store.distance) }}</span>
+            <span>距离：{{ formatDistance(Number(store.distance)) }}</span>
           </div>
         </div>
         
